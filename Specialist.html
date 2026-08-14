@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Find Care Results - Specialists</title>
+
+<link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Roboto,sans-serif;
+}
+
+body{
+    background:#f5f5f5;
+    color:#333;
+}
+
+/* Top Header */
+
+.top-header{
+    background:#fff;
+    height:55px;
+    border-bottom:1px solid #ddd;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 30px;
+}
+
+.logo{
+    font-size:30px;
+    font-weight:bold;
+}
+
+.logo span{
+    color:#6c1d74;
+}
+
+.user{
+    font-size:14px;
+}
+
+/* Navbar */
+
+.navbar{
+    background:#2d2d2d;
+}
+
+.navbar ul{
+    list-style:none;
+    display:flex;
+}
+
+.navbar li{
+    position:relative;
+}
+
+.navbar a{
+    display:block;
+    color:#fff;
+    text-decoration:none;
+    padding:16px 22px;
+    font-size:14px;
+}
+
+.navbar a:hover{
+    background:#6c1d74;
+}
+
+/* Container */
+
+.container{
+    width:95%;
+    margin:auto;
+}
+
+/* Breadcrumb */
+
+.breadcrumb{
+    margin:25px 0 10px;
+    font-size:13px;
+    color:#777;
+}
+
+.breadcrumb a{
+    color:#6c1d74;
+    text-decoration:none;
+}
+
+/* Heading */
+
+.page-title{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.page-title h1{
+    font-size:42px;
+    font-weight:400;
+}
+
+.new-search{
+    border:2px solid #6c1d74;
+    color:#6c1d74;
+    background:#fff;
+    padding:12px 22px;
+    border-radius:4px;
+    cursor:pointer;
+    font-weight:600;
+}
+
+.description{
+    margin:15px 0 25px;
+    font-size:15px;
+}
+
+/* Search Box */
+
+.search-box{
+
+    background:#fff;
+    border:1px solid #ddd;
+    padding:20px;
+    margin-bottom:25px;
+}
+
+.search-box h3{
+    margin-bottom:20px;
+}
+
+.row{
+    display:grid;
+    grid-template-columns:repeat(6,1fr);
+    gap:15px;
+    margin-bottom:15px;
+}
+
+.form-group{
+    display:flex;
+    flex-direction:column;
+}
+
+label{
+    font-size:13px;
+    margin-bottom:6px;
+}
+
+input,select{
+
+    height:42px;
+    border:1px solid #ccc;
+    padding:10px;
+    font-size:14px;
+}
+
+.checkbox{
+    display:flex;
+    align-items:center;
+    margin-top:28px;
+}
+
+.checkbox input{
+    margin-right:8px;
+}
+
+.search-btn{
+
+    margin-top:25px;
+    background:#6c1d74;
+    color:#fff;
+    border:none;
+    padding:12px 35px;
+    border-radius:4px;
+    cursor:pointer;
+    font-size:15px;
+}
+
+.download{
+
+    background:#6c1d74;
+    color:#fff;
+    padding:10px 20px;
+    border:none;
+    border-radius:4px;
+    margin-bottom:20px;
+    cursor:pointer;
+}
+
+/* Provider Card */
+
+.provider-card{
+
+    background:#fff;
+    border:1px solid #d7d7d7;
+    display:grid;
+    grid-template-columns:1.5fr 1.2fr 1fr 1fr 1fr;
+    gap:20px;
+    padding:20px;
+    margin-bottom:18px;
+}
+
+.provider-card h2{
+    font-size:24px;
+    margin-bottom:8px;
+}
+
+.provider-card h4{
+    color:#6c1d74;
+    margin-bottom:8px;
+}
+
+.provider-card p{
+
+    margin:4px 0;
+    font-size:14px;
+}
+
+.phone a{
+
+    color:#6c1d74;
+    text-decoration:none;
+}
+
+.badge{
+
+    display:inline-block;
+    background:#eaf7ea;
+    color:#008000;
+    padding:4px 8px;
+    border-radius:3px;
+    font-size:12px;
+    margin-top:8px;
+}
+
+/* Footer */
+
+footer{
+
+    background:#222;
+    color:#fff;
+    padding:40px 0;
+    margin-top:50px;
+}
+
+.footer-grid{
+
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:30px;
+}
+
+footer h3{
+
+    margin-bottom:15px;
+}
+
+footer ul{
+    list-style:none;
+}
+
+footer li{
+    margin:8px 0;
+}
+
+footer a{
+
+    color:#ddd;
+    text-decoration:none;
+}
+
+.social i{
+
+    font-size:24px;
+    margin-right:15px;
+}
+
+/* Responsive */
+
+@media(max-width:1100px){
+
+.row{
+grid-template-columns:repeat(2,1fr);
+}
+
+.provider-card{
+grid-template-columns:1fr;
+}
+
+.footer-grid{
+grid-template-columns:1fr 1fr;
+}
+
+}
+
+@media(max-width:700px){
+
+.navbar ul{
+flex-direction:column;
+}
+
+.page-title{
+flex-direction:column;
+align-items:flex-start;
+gap:20px;
+}
+
+.row{
+grid-template-columns:1fr;
+}
+
+.footer-grid{
+grid-template-columns:1fr;
+}
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header class="top-header">
+
+<div class="logo">
+MetroPlus<span>Health</span>
+</div>
+
+<div class="user">
+Mohammad U...
+</div>
+
+</header>
+
+<nav class="navbar">
+
+<ul>
+
+<li><a href="#">Home</a></li>
+
+<li><a href="#">My Benefit Plans</a></li>
+
+<li><a href="#">My Services</a></li>
+
+<li><a href="#">My Rewards</a></li>
+
+<li><a href="#">My Payments</a></li>
+
+<li><a href="#">Find Care</a></li>
+
+<li><a href="#">Quick Resources</a></li>
+
+<li><a href="#">Support</a></li>
+
+<li><a href="#">More</a></li>
+
+</ul>
+
+</nav>
+
+<div class="container">
+
+<div class="breadcrumb">
+<a href="#">Home</a> > <a href="#">Find Care</a> > Results
+</div>
+
+<div class="page-title">
+
+<h1>Find Care Results - Specialists</h1>
+
+<button class="new-search">New Search</button>
+
+</div>
+
+<p class="description">
+View Providers and Facilities, get directions, and more.
+</p>
+
+<div class="search-box">
+
+<h3>Standard Search</h3>
+
+<div class="row">
+
+<div class="form-group">
+<label>Keywords</label>
+<input type="text" placeholder="Ex. Provider Name">
+</div>
+
+<div class="form-group">
+<label>Zip Code</label>
+<input type="text" value="10001">
+</div>
+
+<div class="form-group">
+<label>Distance</label>
+<select>
+<option>Select</option>
+<option value="option A">Within 1.5 Miles of</option>
+<option value="option B">Within 1.5 Miles of</option>
+<option value="option C">Within 1.5 Miles of</option>
+<option value="option D">Within 5 Miles of</option>
+<option value="option E">Within 10 Miles of</option>
+<option value="option F">Within 20 Miles of</option>
+</select>
+</div>
+
+<div class="form-group">
+<label>Plan Type</label>
+<select>
+<option value="option G">All Insurance Types</option>
+<option value="option H">Child Health Plus</option>
+<option value="option I">Essential Plan</option>
+<option value="option J">GoldCare</option>
+<option value="option K">Health and Recovery Plan (HARP)</option>
+<option value="option L">Managed Long Term Care</option>
+<option value="option M">Marketplace Health(QHP)</option>
+<option value="option N">Medicaid</option>
+<option value="option O">Medicare</option>
+<option value="option P">MetroPlusGold</option>
+<option value="option Q">MetroPlus Enhanced</option>
+<option value="option R">Partnership in Care (HIV - Special Need Care)</option>
+<option value="option S">Qualified Health Plan (Bronze, Silver, Gold, Platinum)</option>
+<option value="option T">UltraCare</option>
+</select>
+</div>
+
+<div class="form-group">
+<label>Language</label>
+<select>
+<option>Select</option>
+<option value="option U">Any Languages (English)</option>
+<option value="option V">Bengali</option>
+<option value="option W">Chinese</option>
+<option value="option X">Creole</option>
+<option value="option Y">French</option>
+<option value="option Z">Haoussa</option>
+<option value="option Za">Hindi</option>
+<option value="option Zb">Mandinguo</option>
+<option value="option Zc">Punjabi</option>
+<option value="option Zd">Russian</option>
+<option value="option Ze">Spanish</option>
+<option value="option Zf">Twi</option>
+<option value="option Zg">Urdu</option>
+<option value="option Zh">Wolof</option>
+</select>
+</div>
+
+
+Relevance
+Name(A-Z)
+Name(Z-A)
+Distance
+<div class="form-group">
+<label>Sort</label>
+<select>
+<option>Distance</option>
+</select>
+</div>
+
+</div>
+
+<div class="row">
+
+    <div class="form-group">
+        <label>Gender</label>
+        <select>
+            <option>All</option>
+            <option>Male</option>
+            <option>Female</option>
+        </select>
+    </div>
+
+    Addiction Medicine
+Addiction Psychiatry
+Adolescent & Adult Psychology
+Adolescent Medicine
+Adult Congenital Heart Disease
+Advanced Heart Failure & Transplant Cardiology
+Allergy & Immunology
+Applied Behavior Analysis
+Audiology
+Bariatric surgery
+Buprenorphine Prescriber
+Cardio Thoracic Surgery
+Cardio-Thoracic
+Cardiovascular Disease
+Cardiovascular and Vascular Surgery
+Certified Alcohol & Substance Abuse Counseling
+Certified Diabetes Educator
+Child & Adolescent Psychiatry
+Child & Adolescent Psychology
+Child Abuse Pediatrics
+Child Development
+Child Developmental Behavior
+Child Neurology
+Child Psychiatry
+Child Psychology
+Chiropractic Medicine
+Clinical Cardiac Electrophysiology
+Clinical Genetics
+Clinical Neurophysiology
+Clinical Neuropsychology
+Clinical Pathology
+Clinical Psychology
+Clinical Social Work
+Colon & Rectal Surgery
+Creative Arts Therapy
+Critical Care
+Critical Care Medicine
+Critical Care Surgery
+Cytopathology
+Dermatology
+Dermatopathology
+Developmental-Behavioral Peds
+Diagnostic Radiology
+Dietitian and Nutrition
+Doula
+ENT, Head, Neck Surgery
+Electrophysiology
+Endocrinology & Metabolism
+Female Pelvic Medicine and Reconstructive Surgery
+Foot & Ankle Surgery
+Forensic Psychiatry
+Gastroenterology
+General Preventive Medicine
+General Surgery
+Geriatric Medicine
+Geriatric Psychiatry
+Gynecologic Oncology
+Gynecology
+Gynocology (Menopause)
+Hand Surgery
+Hematology
+Hematology/Oncology
+Hospice & Palliative Care
+Hyperbaric Medicine
+Infectious Diseases
+Interventional Cardiology
+Interventional Radiology
+Marriage and Family Therapy
+Master Social Work
+Maternal and Fetal Medicine
+Medical Genetics
+Medical Oncology
+Mental Health Counseling
+MicroSurgery
+Midwifery
+Neonatal - Perinatal Medicine
+Neonatology
+Nephrology
+Neuro-Ophthalmology
+Neurodevelopment-al Disabilities
+Neurological Surgery
+Neurology
+Neuromuscular Medicine
+Neurophysiology
+Neuropsychology
+Neuroradiology
+Neurotology
+Nuclear Cardiology
+Nuclear Medicine
+Nuclear Radiology
+Obstetrics
+Obstetrics & Gynecology
+Occupational Medicine
+Occupational Therapy
+Oncology
+Ophthalmic Dispensing
+Ophthalmology
+Ophthalmology (Retina)
+Optometry
+Oral & Maxillofacial Surgery
+Oral Surgery
+Orthopedic Surgery
+Osteopathic Manipulative Medicine
+Otolaryngology
+Pain Medicine
+Palliative Care
+Pediatric Allergy & Immunology
+Pediatric Cardiology
+Pediatric Critical Care Medicine
+Pediatric Dermatology
+Pediatric Emergency Medicine
+Pediatric Endocrinology
+Pediatric Gastroenterology
+Pediatric Genetics
+Pediatric Hematology/Oncology
+Pediatric Infectious Diseases
+Pediatric Nephrology
+Pediatric Neurosurgery
+Pediatric Occupational Therapy
+Pediatric Ophthalmology
+Pediatric Orthopedic Surgery
+Pediatric Otolaryngology
+Pediatric Physical Therapy
+Pediatric Pulmonology
+Pediatric Pulmonology & Immunology
+Pediatric Radiology
+Pediatric Rehabilitation Medicine
+Pediatric Rheumatology
+Pediatric Speech/Language Pathology
+Pediatric Surgery
+Pediatric Transplant Hepatology
+Pediatric Urology
+Physical Medicine & Pain Management
+Physical Medicine & Rehabilitation
+Physical Therapy
+Physician Assistant
+Plastic Surgery
+Podiatric Surgery
+Podiatry
+Psychiatry
+Psychoanalysis
+Psychosomatic Medicine
+Pulmonary Diseases
+Radiation Oncology
+Reproductive Endocrinology
+Rheumatology
+Sleep Disorders
+Sleep Medicine
+Speech/Language Pathology
+Sports Medicine
+Surgery
+Surgical Critical Care
+Surgical Oncology
+Thoracic & Vascular Surgery
+Thoracic Surgery
+Transplant Hepatology
+Transplant Surgery
+Undersea & Hyperbaric Medicine
+Urology
+Urology Oncology
+Vascular Neurology
+Vascular Surgery
+Vascular and Interventional Radiology
+    <div class="form-group">
+        <label>Specialty</label>
+        <select>
+            <option  value="option 1">Specialists</option>
+            <option  value="option 2">Primary Care</option>
+            <option  value="option 3">Cardiology</option>
+            <option  value="option 4">Dermatology</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label>Area</label>
+        <select>
+            <option  value="option a">All Areas</option>
+        </select>
+    </div>
+
+    <div class="checkbox">
+        <input type="checkbox">
+        <span>Accepting New Patients</span>
+    </div>
+
+</div>
+
+<button class="search-btn">
+    <i class="fa fa-search"></i>
+    Search
+</button>
+
+</div>
+
+<button class="download">
+    <i class="fa fa-file-pdf"></i>
+    Download PDF
+</button>
+
+<!-- Provider Card -->
+
+<div class="provider-card">
+
+    <div>
+
+        <h2>Dr. John Smith</h2>
+
+        <h4>Internal Medicine</h4>
+
+        <p>
+            Board Certified Physician specializing in Internal Medicine and
+            Primary Care.
+        </p>
+
+        <span class="badge">
+            Accepting New Patients
+        </span>
+
+    </div>
+
+    <div>
+
+        <h4>Location</h4>
+
+        <p>123 West 34th Street</p>
+        <p>New York, NY 10001</p>
+
+        <br>
+
+        <div class="phone">
+
+            <a href="#">
+                (212) 555-1234
+            </a>
+
+        </div>
+
+    </div>
+
+    <div>
+
+        <h4>Languages</h4>
+
+        <p>English</p>
+        <p>Spanish</p>
+
+    </div>
+
+    <div>
+
+        <h4>Distance</h4>
+
+        <p>0.8 Miles</p>
+
+    </div>
+
+    <div>
+
+        <h4>Actions</h4>
+
+        <p><a href="#">View Details</a></p>
+        <p><a href="#">Directions</a></p>
+
+    </div>
+
+</div>
+
+<div class="provider-card">
+
+    <div>
+
+        <h2>Dr. Emily Johnson</h2>
+
+        <h4>Cardiology</h4>
+
+        <p>
+            Experienced Cardiologist with over 15 years of clinical practice.
+        </p>
+
+        <span class="badge">
+            Accepting New Patients
+        </span>
+
+    </div>
+
+    <div>
+
+        <h4>Location</h4>
+
+        <p>88 Madison Avenue</p>
+        <p>New York, NY 10010</p>
+
+        <br>
+
+        <div class="phone">
+
+            <a href="#">
+                (646) 555-9876
+            </a>
+
+        </div>
+
+    </div>
+
+    <div>
+
+        <h4>Languages</h4>
+
+        <p>English</p>
+        <p>French</p>
+
+    </div>
+
+    <div>
+
+        <h4>Distance</h4>
+
+        <p>1.3 Miles</p>
+
+    </div>
+
+    <div>
+
+        <h4>Actions</h4>
+
+        <p><a href="#">View Details</a></p>
+        <p><a href="#">Directions</a></p>
+
+    </div>
+
+</div>
+
+<div class="provider-card">
+
+    <div>
+
+        <h2>Dr. Michael Brown</h2>
+
+        <h4>Dermatology</h4>
+
+        <p>
+            Skin care, cosmetic dermatology and preventive treatment.
+        </p>
+
+        <span class="badge">
+            Accepting New Patients
+        </span>
+
+    </div>
+
+    <div>
+
+        <h4>Location</h4>
+
+        <p>501 Lexington Avenue</p>
+        <p>New York, NY 10017</p>
+
+        <br>
+
+        <div class="phone">
+
+            <a href="#">
+                (917) 555-2020
+            </a>
+
+        </div>
+
+    </div>
+
+    <div>
+
+        <h4>Languages</h4>
+
+        <p>English</p>
+
+    </div>
+
+    <div>
+
+        <h4>Distance</h4>
+
+        <p>2.0 Miles</p>
+
+    </div>
+
+    <div>
+
+        <h4>Actions</h4>
+
+        <p><a href="#">View Details</a></p>
+        <p><a href="#">Directions</a></p>
+
+    </div>
+
+</div>
