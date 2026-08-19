@@ -1,10 +1,10 @@
 <?php
 
-$host = getenv('MYSQLHOST');
-$port = getenv('MYSQLPORT') ?: '3306';
-$db   = getenv('MYSQLDATABASE');
-$user = getenv('MYSQLUSER');
-$pass = getenv('MYSQLPASSWORD');
+$host = getenv('DB_HOST');
+$port = getenv('DB_PORT') ?: '3306';
+$db   = getenv('DB_DATABASE');
+$user = getenv('DB_USERNAME');
+$pass = getenv('DB_PASSWORD');
 
 try {
 
