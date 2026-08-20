@@ -1,9 +1,10 @@
 <?php
-require_once 'database.php';
+
+require_once __DIR__ . '/database.php';
 
 /*
 |--------------------------------------------------------------------------
-| Load filter data from MySQL
+| LOAD FILTER DATA
 |--------------------------------------------------------------------------
 */
 
@@ -12,50 +13,52 @@ $specialties = $pdo->query("
     FROM specialties
     WHERE status = 1
     ORDER BY name ASC
-")->fetchAll();
+")->fetchAll(PDO::FETCH_ASSOC);
 
 $languages = $pdo->query("
     SELECT id, name
     FROM languages
     WHERE status = 1
     ORDER BY name ASC
-")->fetchAll();
+")->fetchAll(PDO::FETCH_ASSOC);
 
 $insurancePlans = $pdo->query("
     SELECT id, name
     FROM insurance_plans
     WHERE status = 1
     ORDER BY name ASC
-")->fetchAll();
+")->fetchAll(PDO::FETCH_ASSOC);
 
 $areas = $pdo->query("
     SELECT id, name
     FROM areas
     WHERE status = 1
     ORDER BY name ASC
-")->fetchAll();
+")->fetchAll(PDO::FETCH_ASSOC);
 
 
 /*
 |--------------------------------------------------------------------------
-| Search values
+| SEARCH VALUES
 |--------------------------------------------------------------------------
 */
 
-$keyword = trim($_GET['keyword'] ?? '');
-$zip = trim($_GET['zip'] ?? '');
-$gender = trim($_GET['gender'] ?? '');
+$keyword   = trim($_GET['keyword'] ?? '');
+$zip       = trim($_GET['zip'] ?? '');
+$distance  = trim($_GET['distance'] ?? '');
+$gender    = trim($_GET['gender'] ?? '');
 $specialty = trim($_GET['specialty'] ?? '');
-$language = trim($_GET['language'] ?? '');
+$language  = trim($_GET['language'] ?? '');
 $insurance = trim($_GET['insurance'] ?? '');
-$area = trim($_GET['area'] ?? '');
-$accepting = isset($_GET['accepting']) ? 1 : 0;
-$sort = trim($_GET['sort'] ?? 'distance');
+$area      = trim($_GET['area'] ?? '');
+$sort      = trim($_GET['sort'] ?? 'distance');
+
+$accepting = isset($_GET['accepting']) && $_GET['accepting'] == '1';
 
 
 /*
 |--------------------------------------------------------------------------
-| Provider query
+| BASE QUERY
 |--------------------------------------------------------------------------
 */
 
@@ -73,7 +76,9 @@ $sql = "
         ON p.area_id = a.id
 ";
 
+
 $params = [];
+
 $where = [
     "p.status = 1"
 ];
@@ -81,95 +86,7 @@ $where = [
 
 /*
 |--------------------------------------------------------------------------
-| Keyword
-|--------------------------------------------------------------------------
-*/
-
-if ($keyword !== '') {
-
-    $where[] = "
-        (
-            p.name LIKE :keyword
-            OR p.description LIKE :keyword
-            OR p.email LIKE :keyword
-        )
-    ";
-
-    $params[':keyword'] = '%' . $keyword . '%';
-}
-
-
-/*
-|--------------------------------------------------------------------------
-| ZIP
-|--------------------------------------------------------------------------
-*/
-
-if ($zip !== '') {
-
-    $where[] = "p.zip = :zip";
-
-    $params[':zip'] = $zip;
-}
-
-
-/*
-|--------------------------------------------------------------------------
-| Gender
-|--------------------------------------------------------------------------
-*/
-
-if ($gender !== '' && $gender !== 'All') {
-
-    $where[] = "p.gender = :gender";
-
-    $params[':gender'] = $gender;
-}
-
-
-/*
-|--------------------------------------------------------------------------
-| Specialty
-|--------------------------------------------------------------------------
-*/
-
-if ($specialty !== '') {
-
-    $where[] = "p.specialty_id = :specialty";
-
-    $params[':specialty'] = $specialty;
-}
-
-
-/*
-|--------------------------------------------------------------------------
-| Area
-|--------------------------------------------------------------------------
-*/
-
-if ($area !== '') {
-
-    $where[] = "p.area_id = :area";
-
-    $params[':area'] = $area;
-}
-
-
-/*
-|--------------------------------------------------------------------------
-| Accepting new patients
-|--------------------------------------------------------------------------
-*/
-
-if ($accepting) {
-
-    $where[] = "p.accepting_new_patients = 1";
-}
-
-
-/*
-|--------------------------------------------------------------------------
-| Language filter
+| LANGUAGE JOIN
 |--------------------------------------------------------------------------
 */
 
@@ -188,7 +105,7 @@ if ($language !== '') {
 
 /*
 |--------------------------------------------------------------------------
-| Insurance filter
+| INSURANCE JOIN
 |--------------------------------------------------------------------------
 */
 
@@ -207,69 +124,254 @@ if ($insurance !== '') {
 
 /*
 |--------------------------------------------------------------------------
-| WHERE
+| KEYWORD SEARCH
+|--------------------------------------------------------------------------
+|
+| Search provider name, description, email,
+| phone, address, city, state, ZIP,
+| specialty and area.
 |--------------------------------------------------------------------------
 */
 
-$sql .= " WHERE " . implode(" AND ", $where);
+if ($keyword !== '') {
+
+    $where[] = "
+        (
+            p.name LIKE :keyword
+            OR p.description LIKE :keyword
+            OR p.email LIKE :keyword
+            OR p.phone LIKE :keyword
+            OR p.address LIKE :keyword
+            OR p.city LIKE :keyword
+            OR p.state LIKE :keyword
+            OR p.zip LIKE :keyword
+            OR s.name LIKE :keyword
+            OR a.name LIKE :keyword
+        )
+    ";
+
+    $params[':keyword'] = '%' . $keyword . '%';
+}
 
 
 /*
 |--------------------------------------------------------------------------
-| Sorting
+| ZIP CODE
+|--------------------------------------------------------------------------
+|
+| Only filter ZIP when user actually enters a ZIP.
+|--------------------------------------------------------------------------
+*/
+
+if ($zip !== '') {
+
+    $where[] = "p.zip LIKE :zip";
+
+    $params[':zip'] = $zip . '%';
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| GENDER
+|--------------------------------------------------------------------------
+*/
+
+if ($gender !== '' && $gender !== 'All') {
+
+    $where[] = "p.gender = :gender";
+
+    $params[':gender'] = $gender;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| SPECIALTY
+|--------------------------------------------------------------------------
+*/
+
+if ($specialty !== '') {
+
+    $where[] = "p.specialty_id = :specialty";
+
+    $params[':specialty'] = $specialty;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| AREA
+|--------------------------------------------------------------------------
+*/
+
+if ($area !== '') {
+
+    $where[] = "p.area_id = :area";
+
+    $params[':area'] = $area;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| ACCEPTING NEW PATIENTS
+|--------------------------------------------------------------------------
+*/
+
+if ($accepting) {
+
+    $where[] = "p.accepting_new_patients = 1";
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| WHERE
+|--------------------------------------------------------------------------
+*/
+
+$sql .= "
+    WHERE " . implode(" AND ", $where);
+
+
+/*
+|--------------------------------------------------------------------------
+| SORTING
 |--------------------------------------------------------------------------
 */
 
 switch ($sort) {
 
     case 'name_asc':
-        $sql .= " ORDER BY p.name ASC";
+
+        $sql .= "
+            ORDER BY p.name ASC
+        ";
+
         break;
+
 
     case 'name_desc':
-        $sql .= " ORDER BY p.name DESC";
+
+        $sql .= "
+            ORDER BY p.name DESC
+        ";
+
         break;
 
+
+    case 'distance':
+
+        /*
+         * At this stage we don't have the user's
+         * latitude/longitude, so use ZIP first
+         * and provider ID as fallback.
+         */
+
+        if ($zip !== '') {
+
+            $sql .= "
+                ORDER BY
+                    CASE
+                        WHEN p.zip = :sort_zip THEN 0
+                        ELSE 1
+                    END,
+                    p.id DESC
+            ";
+
+            $params[':sort_zip'] = $zip;
+
+        } else {
+
+            $sql .= "
+                ORDER BY p.id DESC
+            ";
+        }
+
+        break;
+
+
     default:
-        $sql .= " ORDER BY p.id DESC";
+
+        $sql .= "
+            ORDER BY p.id DESC
+        ";
+
         break;
 }
 
 
-$stmt = $pdo->prepare($sql);
-$stmt->execute($params);
+/*
+|--------------------------------------------------------------------------
+| EXECUTE QUERY
+|--------------------------------------------------------------------------
+*/
 
-$providers = $stmt->fetchAll();
+try {
+
+    $stmt = $pdo->prepare($sql);
+
+    $stmt->execute($params);
+
+    $providers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+} catch (PDOException $e) {
+
+    die(
+        "<div style='
+            padding:20px;
+            background:#ffe6e6;
+            color:#900;
+            font-family:Arial;
+        '>
+        <strong>Database Search Error:</strong><br>" .
+        htmlspecialchars($e->getMessage()) .
+        "</div>"
+    );
+}
 
 
 /*
 |--------------------------------------------------------------------------
-| Get languages for each provider
+| GET LANGUAGES FOR EACH PROVIDER
 |--------------------------------------------------------------------------
 */
 
 foreach ($providers as &$provider) {
 
-    $languageStmt = $pdo->prepare("
-        SELECT l.name
-        FROM languages l
-        INNER JOIN provider_languages pl
-            ON l.id = pl.language_id
-        WHERE pl.provider_id = ?
-        ORDER BY l.name
-    ");
+    try {
 
-    $languageStmt->execute([$provider['id']]);
+        $languageStmt = $pdo->prepare("
+            SELECT l.name
+            FROM languages l
 
-    $provider['languages'] = $languageStmt->fetchAll(
-        PDO::FETCH_COLUMN
-    );
+            INNER JOIN provider_languages pl
+                ON l.id = pl.language_id
+
+            WHERE pl.provider_id = ?
+
+            ORDER BY l.name ASC
+        ");
+
+        $languageStmt->execute([
+            $provider['id']
+        ]);
+
+        $provider['languages'] =
+            $languageStmt->fetchAll(PDO::FETCH_COLUMN);
+
+    } catch (PDOException $e) {
+
+        $provider['languages'] = [];
+    }
 }
 
 unset($provider);
 
 ?>
 <!DOCTYPE html>
+
 <html lang="en">
 
 <head>
@@ -292,318 +394,517 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
 
 <style>
 
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:Roboto,sans-serif;
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Roboto, sans-serif;
 }
 
-body{
-    background:#f5f5f5;
-    color:#333;
+body {
+    background: #f5f5f5;
+    color: #333;
 }
 
-/* Top Header */
 
-.top-header{
-    background:#fff;
-    height:55px;
-    border-bottom:1px solid #ddd;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    padding:0 30px;
+/* HEADER */
+
+.top-header {
+    background: #fff;
+    height: 55px;
+    border-bottom: 1px solid #ddd;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 0 30px;
 }
 
-.logo{
-    font-size:30px;
-    font-weight:bold;
+.logo {
+    font-size: 30px;
+    font-weight: bold;
 }
 
-.logo span{
-    color:#6c1d74;
+.logo span {
+    color: #6c1d74;
 }
 
-.user{
-    font-size:14px;
+.user {
+    font-size: 14px;
 }
 
-/* Navbar */
 
-.navbar{
-    background:#2d2d2d;
+/* NAVBAR */
+
+.navbar {
+    background: #2d2d2d;
 }
 
-.navbar ul{
-    list-style:none;
-    display:flex;
+.navbar ul {
+    list-style: none;
+    display: flex;
 }
 
-.navbar li{
-    position:relative;
+.navbar li {
+    position: relative;
 }
 
-.navbar a{
-    display:block;
-    color:#fff;
-    text-decoration:none;
-    padding:16px 22px;
-    font-size:14px;
+.navbar a {
+    display: block;
+    color: #fff;
+    text-decoration: none;
+
+    padding: 16px 22px;
+
+    font-size: 14px;
 }
 
-.navbar a:hover{
-    background:#6c1d74;
+.navbar a:hover {
+    background: #6c1d74;
 }
 
-/* Container */
 
-.container{
-    width:95%;
-    margin:auto;
+/* CONTAINER */
+
+.container {
+    width: 95%;
+    max-width: 1500px;
+    margin: auto;
 }
 
-/* Breadcrumb */
 
-.breadcrumb{
-    margin:25px 0 10px;
-    font-size:13px;
-    color:#777;
+/* BREADCRUMB */
+
+.breadcrumb {
+    margin: 25px 0 10px;
+
+    font-size: 13px;
+    color: #777;
 }
 
-.breadcrumb a{
-    color:#6c1d74;
-    text-decoration:none;
+.breadcrumb a {
+    color: #6c1d74;
+    text-decoration: none;
 }
 
-/* Heading */
 
-.page-title{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
+/* PAGE TITLE */
+
+.page-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
-.page-title h1{
-    font-size:42px;
-    font-weight:400;
+.page-title h1 {
+    font-size: 42px;
+    font-weight: 400;
 }
 
-.new-search{
-    border:2px solid #6c1d74;
-    color:#6c1d74;
-    background:#fff;
-    padding:12px 22px;
-    border-radius:4px;
-    cursor:pointer;
-    font-weight:600;
+.new-search {
+    border: 2px solid #6c1d74;
+
+    color: #6c1d74;
+    background: #fff;
+
+    padding: 12px 22px;
+
+    border-radius: 4px;
+
+    cursor: pointer;
+
+    font-weight: 600;
 }
 
-.description{
-    margin:15px 0 25px;
-    font-size:15px;
+.description {
+    margin: 15px 0 25px;
+
+    font-size: 15px;
 }
 
-/* Search Box */
 
-.search-box{
-    background:#fff;
-    border:1px solid #ddd;
-    padding:20px;
-    margin-bottom:25px;
+/* SEARCH BOX */
+
+.search-box {
+    background: #fff;
+
+    border: 1px solid #ddd;
+
+    padding: 20px;
+
+    margin-bottom: 25px;
 }
 
-.search-box h3{
-    margin-bottom:20px;
+.search-box h3 {
+    margin-bottom: 20px;
 }
 
-.row{
-    display:grid;
-    grid-template-columns:repeat(6,1fr);
-    gap:15px;
-    margin-bottom:15px;
+.row {
+    display: grid;
+
+    grid-template-columns:
+        repeat(6, 1fr);
+
+    gap: 15px;
+
+    margin-bottom: 15px;
 }
 
-.form-group{
-    display:flex;
-    flex-direction:column;
+.form-group {
+    display: flex;
+    flex-direction: column;
 }
 
-label{
-    font-size:13px;
-    margin-bottom:6px;
+label {
+    font-size: 13px;
+
+    margin-bottom: 6px;
 }
 
 input,
-select{
-    height:42px;
-    border:1px solid #ccc;
-    padding:10px;
-    font-size:14px;
-    background:#fff;
+select {
+
+    height: 42px;
+
+    border: 1px solid #ccc;
+
+    padding: 10px;
+
+    font-size: 14px;
+
+    background: #fff;
+
+    width: 100%;
 }
 
-.checkbox{
-    display:flex;
-    align-items:center;
-    margin-top:28px;
+input:focus,
+select:focus {
+
+    outline: none;
+
+    border-color: #6c1d74;
+
+    box-shadow:
+        0 0 0 2px rgba(108, 29, 116, .1);
 }
 
-.checkbox input{
-    margin-right:8px;
+
+/* CHECKBOX */
+
+.checkbox {
+
+    display: flex;
+
+    align-items: center;
+
+    margin-top: 28px;
 }
 
-.search-btn{
-    margin-top:25px;
-    background:#6c1d74;
-    color:#fff;
-    border:none;
-    padding:12px 35px;
-    border-radius:4px;
-    cursor:pointer;
-    font-size:15px;
+.checkbox input {
+
+    width: auto;
+
+    height: auto;
+
+    margin-right: 8px;
 }
 
-.download{
-    background:#6c1d74;
-    color:#fff;
-    padding:10px 20px;
-    border:none;
-    border-radius:4px;
-    margin-bottom:20px;
-    cursor:pointer;
+
+/* SEARCH BUTTON */
+
+.search-btn {
+
+    margin-top: 25px;
+
+    background: #6c1d74;
+
+    color: #fff;
+
+    border: none;
+
+    padding: 12px 35px;
+
+    border-radius: 4px;
+
+    cursor: pointer;
+
+    font-size: 15px;
 }
 
-/* Provider Card */
+.search-btn:hover {
 
-.provider-card{
-    background:#fff;
-    border:1px solid #d7d7d7;
-    display:grid;
-    grid-template-columns:1.5fr 1.2fr 1fr 1fr 1fr;
-    gap:20px;
-    padding:20px;
-    margin-bottom:18px;
+    background: #54155b;
 }
 
-.provider-card h2{
-    font-size:24px;
-    margin-bottom:8px;
+
+/* DOWNLOAD */
+
+.download {
+
+    background: #6c1d74;
+
+    color: #fff;
+
+    padding: 10px 20px;
+
+    border: none;
+
+    border-radius: 4px;
+
+    margin-bottom: 20px;
+
+    cursor: pointer;
 }
 
-.provider-card h4{
-    color:#6c1d74;
-    margin-bottom:8px;
+
+/* RESULT COUNT */
+
+.result-count {
+
+    margin-bottom: 15px;
+
+    font-size: 15px;
+
+    font-weight: 500;
 }
 
-.provider-card p{
-    margin:4px 0;
-    font-size:14px;
+
+/* PROVIDER CARD */
+
+.provider-card {
+
+    background: #fff;
+
+    border: 1px solid #d7d7d7;
+
+    display: grid;
+
+    grid-template-columns:
+        1.5fr
+        1.2fr
+        1fr
+        1fr
+        1fr;
+
+    gap: 20px;
+
+    padding: 20px;
+
+    margin-bottom: 18px;
 }
 
-.phone a{
-    color:#6c1d74;
-    text-decoration:none;
+.provider-card h2 {
+
+    font-size: 24px;
+
+    margin-bottom: 8px;
 }
 
-.badge{
-    display:inline-block;
-    background:#eaf7ea;
-    color:#008000;
-    padding:4px 8px;
-    border-radius:3px;
-    font-size:12px;
-    margin-top:8px;
+.provider-card h4 {
+
+    color: #6c1d74;
+
+    margin-bottom: 8px;
 }
 
-.no-results{
-    background:#fff;
-    border:1px solid #ddd;
-    padding:40px;
-    text-align:center;
-    margin-bottom:30px;
+.provider-card p {
+
+    margin: 4px 0;
+
+    font-size: 14px;
 }
 
-.no-results h2{
-    color:#6c1d74;
-    margin-bottom:10px;
+.phone a {
+
+    color: #6c1d74;
+
+    text-decoration: none;
 }
 
-/* Footer */
+.badge {
 
-footer{
-    background:#222;
-    color:#fff;
-    padding:40px 0;
-    margin-top:50px;
+    display: inline-block;
+
+    background: #eaf7ea;
+
+    color: #008000;
+
+    padding: 4px 8px;
+
+    border-radius: 3px;
+
+    font-size: 12px;
+
+    margin-top: 8px;
 }
 
-.footer-grid{
-    display:grid;
-    grid-template-columns:repeat(4,1fr);
-    gap:30px;
+
+/* ACTION LINKS */
+
+.provider-card a {
+
+    color: #6c1d74;
+
+    text-decoration: none;
 }
 
-footer h3{
-    margin-bottom:15px;
+.provider-card a:hover {
+
+    text-decoration: underline;
 }
 
-footer ul{
-    list-style:none;
+
+/* NO RESULTS */
+
+.no-results {
+
+    background: #fff;
+
+    border: 1px solid #ddd;
+
+    padding: 40px;
+
+    text-align: center;
+
+    margin-bottom: 30px;
 }
 
-footer li{
-    margin:8px 0;
+.no-results h2 {
+
+    color: #6c1d74;
+
+    margin-bottom: 10px;
 }
 
-footer a{
-    color:#ddd;
-    text-decoration:none;
+
+/* FOOTER */
+
+footer {
+
+    background: #222;
+
+    color: #fff;
+
+    padding: 40px 0;
+
+    margin-top: 50px;
 }
 
-.social i{
-    font-size:24px;
-    margin-right:15px;
+.footer-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, 1fr);
+
+    gap: 30px;
 }
 
-/* Responsive */
+footer h3 {
 
-@media(max-width:1100px){
-
-.row{
-    grid-template-columns:repeat(2,1fr);
+    margin-bottom: 15px;
 }
 
-.provider-card{
-    grid-template-columns:1fr;
+footer ul {
+
+    list-style: none;
 }
 
-.footer-grid{
-    grid-template-columns:1fr 1fr;
+footer li {
+
+    margin: 8px 0;
 }
 
+footer a {
+
+    color: #ddd;
+
+    text-decoration: none;
 }
 
-@media(max-width:700px){
+.social i {
 
-.navbar ul{
-    flex-direction:column;
+    font-size: 24px;
+
+    margin-right: 15px;
 }
 
-.page-title{
-    flex-direction:column;
-    align-items:flex-start;
-    gap:20px;
+
+/* PRINT */
+
+@media print {
+
+    .top-header,
+    .navbar,
+    .search-box,
+    .download,
+    .new-search,
+    footer {
+
+        display: none !important;
+    }
+
+    body {
+
+        background: white;
+    }
+
+    .provider-card {
+
+        break-inside: avoid;
+    }
 }
 
-.row{
-    grid-template-columns:1fr;
+
+/* RESPONSIVE */
+
+@media(max-width:1100px) {
+
+    .row {
+
+        grid-template-columns:
+            repeat(2, 1fr);
+    }
+
+    .provider-card {
+
+        grid-template-columns: 1fr;
+    }
+
+    .footer-grid {
+
+        grid-template-columns:
+            1fr 1fr;
+    }
 }
 
-.footer-grid{
-    grid-template-columns:1fr;
-}
 
+@media(max-width:700px) {
+
+    .navbar ul {
+
+        flex-direction: column;
+    }
+
+    .page-title {
+
+        flex-direction: column;
+
+        align-items: flex-start;
+
+        gap: 20px;
+    }
+
+    .row {
+
+        grid-template-columns: 1fr;
+    }
+
+    .footer-grid {
+
+        grid-template-columns: 1fr;
+    }
 }
 
 </style>
@@ -617,11 +918,15 @@ footer a{
 <header class="top-header">
 
 <div class="logo">
+
 MetroPlus<span>Health</span>
+
 </div>
 
 <div class="user">
+
 Mohammad U...
+
 </div>
 
 </header>
@@ -631,23 +936,41 @@ Mohammad U...
 
 <ul>
 
-<li><a href="index.html">Home</a></li>
+<li>
+<a href="index.html">Home</a>
+</li>
 
-<li><a href="#">My Benefit Plans</a></li>
+<li>
+<a href="#">My Benefit Plans</a>
+</li>
 
-<li><a href="#">My Services</a></li>
+<li>
+<a href="#">My Services</a>
+</li>
 
-<li><a href="#">My Rewards</a></li>
+<li>
+<a href="#">My Rewards</a>
+</li>
 
-<li><a href="#">My Payments</a></li>
+<li>
+<a href="#">My Payments</a>
+</li>
 
-<li><a href="findcare.html">Find Care</a></li>
+<li>
+<a href="findcare.html">Find Care</a>
+</li>
 
-<li><a href="#">Quick Resources</a></li>
+<li>
+<a href="#">Quick Resources</a>
+</li>
 
-<li><a href="#">Support</a></li>
+<li>
+<a href="#">Support</a>
+</li>
 
-<li><a href="#">More</a></li>
+<li>
+<a href="#">More</a>
+</li>
 
 </ul>
 
@@ -660,9 +983,13 @@ Mohammad U...
 <div class="breadcrumb">
 
 <a href="index.html">Home</a>
+
 >
+
 <a href="findcare.html">Find Care</a>
+
 >
+
 Results
 
 </div>
@@ -671,7 +998,9 @@ Results
 <div class="page-title">
 
 <h1>
+
 Find Care Results - Specialists
+
 </h1>
 
 <button
@@ -693,7 +1022,9 @@ View Providers and Facilities, get directions, and more.
 </p>
 
 
-<!-- SEARCH FORM -->
+<!-- ==========================================================
+     SEARCH FORM
+=========================================================== -->
 
 <form
 method="GET"
@@ -702,26 +1033,29 @@ class="search-box">
 
 
 <h3>
+
 Standard Search
+
 </h3>
 
 
 <div class="row">
 
 
-<!-- Keywords -->
+<!-- KEYWORDS -->
 
 <div class="form-group">
 
 <label>
+
 Keywords
+
 </label>
 
 <input
 type="text"
 name="keyword"
 value="<?= htmlspecialchars($keyword) ?>"
-id="keyword"
 placeholder="Ex. Provider Name">
 
 </div>
@@ -732,43 +1066,69 @@ placeholder="Ex. Provider Name">
 <div class="form-group">
 
 <label>
+
 Zip Code
+
 </label>
 
 <input
 type="text"
 name="zip"
-value="<?= htmlspecialchars($zip ?: '10001') ?>">
+value="<?= htmlspecialchars($zip) ?>"
+placeholder="Enter ZIP Code">
 
 </div>
 
 
-<!-- Distance -->
+<!-- DISTANCE -->
 
 <div class="form-group">
 
 <label>
+
 Distance
+
 </label>
 
 <select name="distance">
 
-<option>Select</option>
+<option value=""
+<?= $distance === '' ? 'selected' : '' ?>>
 
-<option value="1.5">
-Within 1.5 Miles of
+Select
+
 </option>
 
-<option value="5">
-Within 5 Miles of
+<option
+value="1.5"
+<?= $distance === '1.5' ? 'selected' : '' ?>>
+
+Within 1.5 Miles
+
 </option>
 
-<option value="10">
-Within 10 Miles of
+<option
+value="5"
+<?= $distance === '5' ? 'selected' : '' ?>>
+
+Within 5 Miles
+
 </option>
 
-<option value="20">
-Within 20 Miles of
+<option
+value="10"
+<?= $distance === '10' ? 'selected' : '' ?>>
+
+Within 10 Miles
+
+</option>
+
+<option
+value="20"
+<?= $distance === '20' ? 'selected' : '' ?>>
+
+Within 20 Miles
+
 </option>
 
 </select>
@@ -776,24 +1136,28 @@ Within 20 Miles of
 </div>
 
 
-<!-- Insurance -->
+<!-- INSURANCE -->
 
 <div class="form-group">
 
 <label>
+
 Plan Type
+
 </label>
 
 <select name="insurance">
 
 <option value="">
+
 All Insurance Types
+
 </option>
 
-<?php foreach($insurancePlans as $plan): ?>
+<?php foreach ($insurancePlans as $plan): ?>
 
 <option
-value="<?= $plan['id'] ?>"
+value="<?= htmlspecialchars($plan['id']) ?>"
 <?= ($insurance == $plan['id']) ? 'selected' : '' ?>>
 
 <?= htmlspecialchars($plan['name']) ?>
@@ -807,24 +1171,28 @@ value="<?= $plan['id'] ?>"
 </div>
 
 
-<!-- Language -->
+<!-- LANGUAGE -->
 
 <div class="form-group">
 
 <label>
+
 Language
+
 </label>
 
 <select name="language">
 
 <option value="">
+
 Any Languages (English)
+
 </option>
 
-<?php foreach($languages as $lang): ?>
+<?php foreach ($languages as $lang): ?>
 
 <option
-value="<?= $lang['id'] ?>"
+value="<?= htmlspecialchars($lang['id']) ?>"
 <?= ($language == $lang['id']) ? 'selected' : '' ?>>
 
 <?= htmlspecialchars($lang['name']) ?>
@@ -838,12 +1206,14 @@ value="<?= $lang['id'] ?>"
 </div>
 
 
-<!-- Sort -->
+<!-- SORT -->
 
 <div class="form-group">
 
 <label>
+
 Sort
+
 </label>
 
 <select name="sort">
@@ -876,25 +1246,28 @@ Name (Z-A)
 
 </div>
 
-
 </div>
 
 
 <div class="row">
 
 
-<!-- Gender -->
+<!-- GENDER -->
 
 <div class="form-group">
 
 <label>
+
 Gender
+
 </label>
 
 <select name="gender">
 
 <option value="">
+
 All
+
 </option>
 
 <option
@@ -931,19 +1304,23 @@ Other
 <div class="form-group">
 
 <label>
+
 Specialty
+
 </label>
 
 <select name="specialty">
 
 <option value="">
+
 All Specialties
+
 </option>
 
-<?php foreach($specialties as $spec): ?>
+<?php foreach ($specialties as $spec): ?>
 
 <option
-value="<?= $spec['id'] ?>"
+value="<?= htmlspecialchars($spec['id']) ?>"
 <?= ($specialty == $spec['id']) ? 'selected' : '' ?>>
 
 <?= htmlspecialchars($spec['name']) ?>
@@ -962,19 +1339,23 @@ value="<?= $spec['id'] ?>"
 <div class="form-group">
 
 <label>
+
 Area
+
 </label>
 
 <select name="area">
 
 <option value="">
+
 All Areas
+
 </option>
 
-<?php foreach($areas as $areaItem): ?>
+<?php foreach ($areas as $areaItem): ?>
 
 <option
-value="<?= $areaItem['id'] ?>"
+value="<?= htmlspecialchars($areaItem['id']) ?>"
 <?= ($area == $areaItem['id']) ? 'selected' : '' ?>>
 
 <?= htmlspecialchars($areaItem['name']) ?>
@@ -999,7 +1380,9 @@ value="1"
 <?= $accepting ? 'checked' : '' ?>>
 
 <span>
+
 Accepting New Patients
+
 </span>
 
 </div>
@@ -1034,18 +1417,37 @@ Download PDF
 </button>
 
 
-<!-- RESULTS -->
+<!-- RESULT COUNT -->
 
-<?php if(count($providers) === 0): ?>
+<div class="result-count">
+
+<?= count($providers) ?>
+
+Provider<?= count($providers) == 1 ? '' : 's' ?>
+
+Found
+
+</div>
+
+
+<!-- ==========================================================
+     RESULTS
+=========================================================== -->
+
+<?php if (count($providers) === 0): ?>
 
 <div class="no-results">
 
 <h2>
+
 No Providers Found
+
 </h2>
 
 <p>
+
 No providers match your current search criteria.
+
 </p>
 
 </div>
@@ -1053,7 +1455,7 @@ No providers match your current search criteria.
 <?php endif; ?>
 
 
-<?php foreach($providers as $provider): ?>
+<?php foreach ($providers as $provider): ?>
 
 
 <div class="provider-card">
@@ -1074,7 +1476,7 @@ No providers match your current search criteria.
 
 <?= htmlspecialchars(
     $provider['specialty_name']
-    ?: $provider['provider_type']
+    ?: ($provider['provider_type'] ?? 'Provider')
 ) ?>
 
 </h4>
@@ -1083,13 +1485,14 @@ No providers match your current search criteria.
 <p>
 
 <?= htmlspecialchars(
-    $provider['description'] ?: 'Provider information available.'
+    $provider['description']
+    ?: 'Provider information available.'
 ) ?>
 
 </p>
 
 
-<?php if($provider['accepting_new_patients']): ?>
+<?php if (!empty($provider['accepting_new_patients'])): ?>
 
 <span class="badge">
 
@@ -1107,14 +1510,18 @@ Accepting New Patients
 <div>
 
 <h4>
+
 Location
+
 </h4>
 
 
-<?php if($provider['address']): ?>
+<?php if (!empty($provider['address'])): ?>
 
 <p>
+
 <?= htmlspecialchars($provider['address']) ?>
+
 </p>
 
 <?php endif; ?>
@@ -1122,11 +1529,11 @@ Location
 
 <p>
 
-<?= htmlspecialchars($provider['city']) ?>,
+<?= htmlspecialchars($provider['city'] ?? '') ?>,
 
-<?= htmlspecialchars($provider['state']) ?>
+<?= htmlspecialchars($provider['state'] ?? '') ?>
 
-<?= htmlspecialchars($provider['zip']) ?>
+<?= htmlspecialchars($provider['zip'] ?? '') ?>
 
 </p>
 
@@ -1134,7 +1541,7 @@ Location
 <br>
 
 
-<?php if($provider['phone']): ?>
+<?php if (!empty($provider['phone'])): ?>
 
 <div class="phone">
 
@@ -1157,13 +1564,15 @@ href="tel:<?= htmlspecialchars($provider['phone']) ?>">
 <div>
 
 <h4>
+
 Languages
+
 </h4>
 
 
-<?php if(count($provider['languages']) > 0): ?>
+<?php if (!empty($provider['languages'])): ?>
 
-<?php foreach($provider['languages'] as $providerLanguage): ?>
+<?php foreach ($provider['languages'] as $providerLanguage): ?>
 
 <p>
 
@@ -1176,7 +1585,9 @@ Languages
 <?php else: ?>
 
 <p>
+
 English
+
 </p>
 
 <?php endif; ?>
@@ -1189,12 +1600,29 @@ English
 <div>
 
 <h4>
+
 Distance
+
 </h4>
 
+
+<?php if ($zip !== '' && !empty($provider['zip']) && $provider['zip'] === $zip): ?>
+
 <p>
-Distance unavailable
+
+Matching ZIP
+
 </p>
+
+<?php else: ?>
+
+<p>
+
+Distance unavailable
+
+</p>
+
+<?php endif; ?>
 
 </div>
 
@@ -1204,9 +1632,13 @@ Distance unavailable
 <div>
 
 <h4>
+
 Actions
+
 </h4>
 
+
+<?php if (!empty($provider['phone'])): ?>
 
 <p>
 
@@ -1219,33 +1651,46 @@ Call Provider
 
 </p>
 
+<?php endif; ?>
 
-<?php if($provider['latitude'] && $provider['longitude']): ?>
+
+<?php
+
+$mapQuery = '';
+
+if (
+    !empty($provider['latitude']) &&
+    !empty($provider['longitude'])
+) {
+
+    $mapQuery =
+        $provider['latitude'] .
+        ',' .
+        $provider['longitude'];
+
+} elseif (!empty($provider['address'])) {
+
+    $mapQuery =
+        $provider['address'] .
+        ', ' .
+        ($provider['city'] ?? '') .
+        ', ' .
+        ($provider['state'] ?? '') .
+        ' ' .
+        ($provider['zip'] ?? '');
+}
+
+?>
+
+
+<?php if ($mapQuery !== ''): ?>
 
 <p>
 
 <a
 target="_blank"
-href="https://www.google.com/maps/search/?api=1&query=<?= urlencode($provider['latitude'] . ',' . $provider['longitude']) ?>">
-
-Directions
-
-</a>
-
-</p>
-
-<?php elseif($provider['address']): ?>
-
-<p>
-
-<a
-target="_blank"
-href="https://www.google.com/maps/search/?api=1&query=<?= urlencode(
-    $provider['address'] . ', ' .
-    $provider['city'] . ', ' .
-    $provider['state'] . ' ' .
-    $provider['zip']
-) ?>">
+rel="noopener"
+href="https://www.google.com/maps/search/?api=1&query=<?= urlencode($mapQuery) ?>">
 
 Directions
 
@@ -1277,11 +1722,15 @@ Directions
 <div>
 
 <h3>
+
 MetroPlus Health
+
 </h3>
 
 <p>
+
 Quality healthcare and provider services.
+
 </p>
 
 </div>
@@ -1290,27 +1739,41 @@ Quality healthcare and provider services.
 <div>
 
 <h3>
+
 Quick Links
+
 </h3>
 
 <ul>
 
 <li>
+
 <a href="index.html">
+
 Home
+
 </a>
+
 </li>
 
 <li>
+
 <a href="findcare.html">
+
 Find Care
+
 </a>
+
 </li>
 
 <li>
+
 <a href="Specialist.php">
+
 Specialists
+
 </a>
+
 </li>
 
 </ul>
@@ -1321,27 +1784,41 @@ Specialists
 <div>
 
 <h3>
+
 Resources
+
 </h3>
 
 <ul>
 
 <li>
+
 <a href="#">
+
 Member Services
+
 </a>
+
 </li>
 
 <li>
+
 <a href="#">
+
 Support
+
 </a>
+
 </li>
 
 <li>
+
 <a href="#">
+
 Contact Us
+
 </a>
+
 </li>
 
 </ul>
@@ -1352,7 +1829,9 @@ Contact Us
 <div>
 
 <h3>
+
 Follow Us
+
 </h3>
 
 <div class="social">
