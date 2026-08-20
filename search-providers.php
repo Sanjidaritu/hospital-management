@@ -2,19 +2,20 @@
 
 header('Content-Type: application/json');
 
-require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../database.php';
 
 try {
 
     $keyword = trim($_GET['keyword'] ?? '');
     $zip = trim($_GET['zip'] ?? '');
-    $plan = trim($_GET['plan'] ?? '');
+    $distance = trim($_GET['distance'] ?? '');
+    $plan_type = trim($_GET['plan_type'] ?? '');
     $language = trim($_GET['language'] ?? '');
     $gender = trim($_GET['gender'] ?? '');
-    $specialty = trim($_GET['specialty'] ?? '');
-    $area = trim($_GET['area'] ?? '');
-    $accepting = $_GET['accepting'] ?? '';
-    $sort = $_GET['sort'] ?? 'distance';
+    $specialty_id = intval($_GET['specialty_id'] ?? 0);
+    $area_id = intval($_GET['area_id'] ?? 0);
+    $accepting = isset($_GET['accepting']) && $_GET['accepting'] == '1';
+    $sort = trim($_GET['sort'] ?? 'distance');
 
     $sql = "
         SELECT DISTINCT
@@ -30,43 +31,26 @@ try {
             p.phone,
             p.email,
             p.accepting_new_patients,
+            p.latitude,
+            p.longitude,
             s.name AS specialty,
-            a.name AS area,
-
-            GROUP_CONCAT(
-                DISTINCT l.name
-                ORDER BY l.name
-                SEPARATOR ', '
-            ) AS languages
-
+            a.name AS area
         FROM providers p
-
         LEFT JOIN specialties s
             ON p.specialty_id = s.id
-
         LEFT JOIN areas a
             ON p.area_id = a.id
-
         LEFT JOIN provider_languages pl
             ON p.id = pl.provider_id
-
         LEFT JOIN languages l
             ON pl.language_id = l.id
-
-        LEFT JOIN provider_insurance pi
-            ON p.id = pi.provider_id
-
-        LEFT JOIN insurance_plans ip
-            ON pi.insurance_id = ip.id
-
         WHERE p.status = 1
     ";
 
     $params = [];
 
-    /*
-     * Keyword search
-     */
+    /* Keyword */
+
     if ($keyword !== '') {
 
         $sql .= "
@@ -77,52 +61,23 @@ try {
             )
         ";
 
-        $params[':keyword'] = "%{$keyword}%";
+        $params[':keyword'] = '%' . $keyword . '%';
     }
 
-    /*
-     * ZIP code
-     */
+    /* Zip */
+
     if ($zip !== '') {
 
         $sql .= "
-            AND p.zip = :zip
+            AND p.zip LIKE :zip
         ";
 
-        $params[':zip'] = $zip;
+        $params[':zip'] = $zip . '%';
     }
 
-    /*
-     * Insurance plan
-     */
-    if ($plan !== '' && strtolower($plan) !== 'all') {
+    /* Gender */
 
-        $sql .= "
-            AND ip.name = :plan
-        ";
-
-        $params[':plan'] = $plan;
-    }
-
-    /*
-     * Language
-     */
-    if ($language !== '' &&
-        strtolower($language) !== 'select' &&
-        strtolower($language) !== 'all') {
-
-        $sql .= "
-            AND l.name = :language
-        ";
-
-        $params[':language'] = $language;
-    }
-
-    /*
-     * Gender
-     */
-    if ($gender !== '' &&
-        strtolower($gender) !== 'all') {
+    if ($gender !== '' && strtolower($gender) !== 'all') {
 
         $sql .= "
             AND p.gender = :gender
@@ -131,48 +86,50 @@ try {
         $params[':gender'] = $gender;
     }
 
-    /*
-     * Specialty
-     */
-    if ($specialty !== '') {
+    /* Specialty */
+
+    if ($specialty_id > 0) {
 
         $sql .= "
-            AND s.name = :specialty
+            AND p.specialty_id = :specialty_id
         ";
 
-        $params[':specialty'] = $specialty;
+        $params[':specialty_id'] = $specialty_id;
     }
 
-    /*
-     * Area
-     */
-    if ($area !== '' &&
-        strtolower($area) !== 'all areas') {
+    /* Area */
+
+    if ($area_id > 0) {
 
         $sql .= "
-            AND a.name = :area
+            AND p.area_id = :area_id
         ";
 
-        $params[':area'] = $area;
+        $params[':area_id'] = $area_id;
     }
 
-    /*
-     * Accepting new patients
-     */
-    if ($accepting === '1') {
+    /* Language */
+
+    if ($language !== '' && strtolower($language) !== 'select') {
+
+        $sql .= "
+            AND l.name = :language
+        ";
+
+        $params[':language'] = $language;
+    }
+
+    /* Accepting new patients */
+
+    if ($accepting) {
 
         $sql .= "
             AND p.accepting_new_patients = 1
         ";
     }
 
-    $sql .= "
-        GROUP BY p.id
-    ";
+    /* Sorting */
 
-    /*
-     * Sorting
-     */
     switch ($sort) {
 
         case 'name_asc':
@@ -183,8 +140,9 @@ try {
             $sql .= " ORDER BY p.name DESC";
             break;
 
+        case 'distance':
         default:
-            $sql .= " ORDER BY p.id DESC";
+            $sql .= " ORDER BY p.id ASC";
             break;
     }
 
@@ -192,20 +150,21 @@ try {
 
     $stmt->execute($params);
 
-    $providers = $stmt->fetchAll();
+    $providers = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     echo json_encode([
-        "success" => true,
-        "count" => count($providers),
-        "providers" => $providers
+        'success' => true,
+        'count' => count($providers),
+        'providers' => $providers
     ]);
 
-} catch (Exception $e) {
+} catch (PDOException $e) {
 
     http_response_code(500);
 
     echo json_encode([
-        "success" => false,
-        "message" => "Unable to search providers."
+        'success' => false,
+        'message' => 'Database query failed.',
+        'error' => $e->getMessage()
     ]);
 }
