@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Find Care - Specialists</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f7;
+            margin: 0;
+            padding: 0;
+        }
+
+        .header {
+            background: white;
+            padding: 25px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .container {
+            width: 1200px;
+            max-width: 95%;
+            margin: 30px auto;
+        }
+
+        h1 {
+            color: #4b006e;
+        }
+
+        .search-box {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0,0,0,.1);
+        }
+
+        select,
+        input {
+            padding: 12px;
+            margin: 8px;
+            min-width: 200px;
+        }
+
+        button {
+            padding: 12px 30px;
+            background: #5a1778;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .provider {
+            background: white;
+            margin-top: 15px;
+            padding: 20px;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="header">
+    <h1>Find Care Results - Specialists</h1>
+</div>
+
+<div class="container">
+
+    <div class="search-box">
+
+        <input
+            type="text"
+            id="keyword"
+            placeholder="Keywords"
+        >
+
+        <select id="insurance">
+            <option value="">All Insurance Types</option>
+        </select>
+
+        <select id="language">
+            <option value="">Any Languages</option>
+        </select>
+
+        <select id="specialty">
+            <option value="">All Specialties</option>
+        </select>
+
+        <select id="area">
+            <option value="">All Areas</option>
+        </select>
+
+        <select id="gender">
+            <option value="">All</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Other">Other</option>
+        </select>
+
+        <br>
+
+        <button onclick="searchProviders()">
+            Search
+        </button>
+
+    </div>
+
+    <div id="results"></div>
+
+</div>
+
+
+<script>
+
+async function loadFilters() {
+
+    try {
+
+        const [
+            insuranceResponse,
+            languageResponse,
+            specialtyResponse,
+            areaResponse
+        ] = await Promise.all([
+
+            fetch("/api/insurance"),
+            fetch("/api/languages"),
+            fetch("/api/specialties"),
+            fetch("/api/areas")
+
+        ]);
+
+        const insurance = await insuranceResponse.json();
+        const languages = await languageResponse.json();
+        const specialties = await specialtyResponse.json();
+        const areas = await areaResponse.json();
+
+
+        insurance.forEach(item => {
+
+            document.getElementById("insurance").innerHTML += `
+                <option value="${item.name}">
+                    ${item.name}
+                </option>
+            `;
+
+        });
+
+
+        languages.forEach(item => {
+
+            document.getElementById("language").innerHTML += `
+                <option value="${item.name}">
+                    ${item.name}
+                </option>
+            `;
+
+        });
+
+
+        specialties.forEach(item => {
+
+            document.getElementById("specialty").innerHTML += `
+                <option value="${item.name}">
+                    ${item.name}
+                </option>
+            `;
+
+        });
+
+
+        areas.forEach(item => {
+
+            document.getElementById("area").innerHTML += `
+                <option value="${item.name}">
+                    ${item.name}
+                </option>
+            `;
+
+        });
+
+    } catch (error) {
+
+        console.error(
+            "Could not load filters:",
+            error
+        );
+
+    }
+
+}
+
+
+async function searchProviders() {
+
+    const keyword =
+        document.getElementById("keyword").value;
+
+    const insurance =
+        document.getElementById("insurance").value;
+
+    const language =
+        document.getElementById("language").value;
+
+    const specialty =
+        document.getElementById("specialty").value;
+
+    const area =
+        document.getElementById("area").value;
+
+    const gender =
+        document.getElementById("gender").value;
+
+
+    const params = new URLSearchParams({
+
+        keyword,
+        insurance,
+        language,
+        specialty,
+        area,
+        gender
+
+    });
+
+
+    try {
+
+        const response =
+            await fetch(`/api/providers?${params}`);
+
+        const data =
+            await response.json();
+
+
+        const results =
+            document.getElementById("results");
+
+        results.innerHTML = "";
+
+
+        if (!data.providers || data.providers.length === 0) {
+
+            results.innerHTML =
+                "<div class='provider'>No providers found.</div>";
+
+            return;
+
+        }
+
+
+        data.providers.forEach(provider => {
+
+            results.innerHTML += `
+
+                <div class="provider">
+
+                    <h2>
+                        ${provider.provider}
+                    </h2>
+
+                    <p>
+                        <strong>Specialty:</strong>
+                        ${provider.specialty || "N/A"}
+                    </p>
+
+                    <p>
+                        <strong>Area:</strong>
+                        ${provider.area || "N/A"}
+                    </p>
+
+                    <p>
+                        <strong>Gender:</strong>
+                        ${provider.gender || "N/A"}
+                    </p>
+
+                </div>
+
+            `;
+
+        });
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        document.getElementById("results").innerHTML =
+            "<div class='provider'>Unable to search providers.</div>";
+
+    }
+
+}
+
+
+loadFilters();
+
+</script>
+
+</body>
+</html>
