@@ -5,11 +5,16 @@ const path = require("path");
 
 const app = express();
 
+
+// ======================================================
+// MIDDLEWARE
+// ======================================================
+
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve HTML, CSS, JavaScript and other static files
+// Serve HTML, CSS and JavaScript files
 app.use(express.static(__dirname));
 
 
@@ -31,7 +36,7 @@ const db = mysql.createPool({
 
 
 // ======================================================
-// TEST DATABASE CONNECTION
+// TEST DATABASE
 // ======================================================
 
 app.get("/api/test", async (req, res) => {
@@ -50,18 +55,20 @@ app.get("/api/test", async (req, res) => {
 
     } catch (error) {
 
-        console.error("Database connection error:", error);
+        console.error("Database error:", error);
 
         res.status(500).json({
             success: false,
             error: error.message
         });
+
     }
+
 });
 
 
 // ======================================================
-// GET ALL PROVIDERS / SEARCH PROVIDERS
+// PROVIDER SEARCH
 // ======================================================
 
 app.get("/api/providers", async (req, res) => {
@@ -74,24 +81,17 @@ app.get("/api/providers", async (req, res) => {
             language = "",
             specialty = "",
             area = "",
-            gender = "",
-            accepting_new_patients = ""
+            gender = ""
         } = req.query;
 
 
         let sql = `
             SELECT DISTINCT
-
                 p.id,
-
                 p.name AS provider,
-
                 s.name AS specialty,
-
                 a.name AS area,
-
                 p.gender
-
             FROM providers p
 
             LEFT JOIN specialties s
@@ -119,9 +119,9 @@ app.get("/api/providers", async (req, res) => {
         const params = [];
 
 
-        // ==================================================
+        // --------------------------------------------------
         // KEYWORD
-        // ==================================================
+        // --------------------------------------------------
 
         if (keyword.trim() !== "") {
 
@@ -134,12 +134,13 @@ app.get("/api/providers", async (req, res) => {
 
             params.push(`%${keyword}%`);
             params.push(`%${keyword}%`);
+
         }
 
 
-        // ==================================================
+        // --------------------------------------------------
         // INSURANCE
-        // ==================================================
+        // --------------------------------------------------
 
         if (
             insurance.trim() !== "" &&
@@ -151,12 +152,13 @@ app.get("/api/providers", async (req, res) => {
             `;
 
             params.push(insurance);
+
         }
 
 
-        // ==================================================
+        // --------------------------------------------------
         // LANGUAGE
-        // ==================================================
+        // --------------------------------------------------
 
         if (
             language.trim() !== "" &&
@@ -168,12 +170,13 @@ app.get("/api/providers", async (req, res) => {
             `;
 
             params.push(language);
+
         }
 
 
-        // ==================================================
+        // --------------------------------------------------
         // SPECIALTY
-        // ==================================================
+        // --------------------------------------------------
 
         if (
             specialty.trim() !== "" &&
@@ -185,12 +188,13 @@ app.get("/api/providers", async (req, res) => {
             `;
 
             params.push(specialty);
+
         }
 
 
-        // ==================================================
+        // --------------------------------------------------
         // AREA
-        // ==================================================
+        // --------------------------------------------------
 
         if (
             area.trim() !== "" &&
@@ -202,12 +206,13 @@ app.get("/api/providers", async (req, res) => {
             `;
 
             params.push(area);
+
         }
 
 
-        // ==================================================
+        // --------------------------------------------------
         // GENDER
-        // ==================================================
+        // --------------------------------------------------
 
         if (
             gender.trim() !== "" &&
@@ -219,38 +224,22 @@ app.get("/api/providers", async (req, res) => {
             `;
 
             params.push(gender);
+
         }
 
 
-        // ==================================================
-        // ACCEPTING NEW PATIENTS
-        // ==================================================
-
-        if (
-            accepting_new_patients !== "" &&
-            accepting_new_patients !== "All"
-        ) {
-
-            sql += `
-                AND p.accepting_new_patients = ?
-            `;
-
-            params.push(accepting_new_patients);
-        }
-
-
-        // ==================================================
-        // SORT
-        // ==================================================
+        // --------------------------------------------------
+        // SORT BY NAME
+        // --------------------------------------------------
 
         sql += `
             ORDER BY p.name ASC
         `;
 
 
-        // ==================================================
-        // EXECUTE QUERY
-        // ==================================================
+        // --------------------------------------------------
+        // RUN QUERY
+        // --------------------------------------------------
 
         const [providers] = await db.query(
             sql,
@@ -290,7 +279,7 @@ app.get("/api/providers", async (req, res) => {
 
 
 // ======================================================
-// GET ALL LANGUAGES
+// GET LANGUAGES
 // ======================================================
 
 app.get("/api/languages", async (req, res) => {
@@ -312,15 +301,17 @@ app.get("/api/languages", async (req, res) => {
         console.error(error);
 
         res.status(500).json({
+            success: false,
             error: error.message
         });
+
     }
 
 });
 
 
 // ======================================================
-// GET ALL INSURANCE PLANS
+// GET INSURANCE
 // ======================================================
 
 app.get("/api/insurance", async (req, res) => {
@@ -342,15 +333,17 @@ app.get("/api/insurance", async (req, res) => {
         console.error(error);
 
         res.status(500).json({
+            success: false,
             error: error.message
         });
+
     }
 
 });
 
 
 // ======================================================
-// GET ALL SPECIALTIES
+// GET SPECIALTIES
 // ======================================================
 
 app.get("/api/specialties", async (req, res) => {
@@ -372,15 +365,17 @@ app.get("/api/specialties", async (req, res) => {
         console.error(error);
 
         res.status(500).json({
+            success: false,
             error: error.message
         });
+
     }
 
 });
 
 
 // ======================================================
-// GET ALL AREAS
+// GET AREAS
 // ======================================================
 
 app.get("/api/areas", async (req, res) => {
@@ -402,8 +397,10 @@ app.get("/api/areas", async (req, res) => {
         console.error(error);
 
         res.status(500).json({
+            success: false,
             error: error.message
         });
+
     }
 
 });
