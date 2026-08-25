@@ -1,464 +1,147 @@
 const express = require("express");
-const mysql = require("mysql2/promise");
 const cors = require("cors");
-const path = require("path");
+const mysql = require("mysql2/promise");
 
 const app = express();
 
-
-// ======================================================
-// MIDDLEWARE
-// ======================================================
-
 app.use(cors());
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
-// Serve HTML, CSS and JavaScript files
-app.use(express.static(__dirname));
-
-
-// ======================================================
-// MYSQL CONNECTION
-// ======================================================
-
+// Railway MySQL environment variables
 const db = mysql.createPool({
-    host: process.env.MYSQLHOST,
-    port: process.env.MYSQLPORT,
-    user: process.env.MYSQLUSER,
-    password: process.env.MYSQLPASSWORD,
-    database: process.env.MYSQLDATABASE,
-
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0
+  host: process.env.MYSQLHOST,
+  port: process.env.MYSQLPORT || 3306,
+  user: process.env.MYSQLUSER,
+  password: process.env.MYSQLPASSWORD,
+  database: process.env.MYSQLDATABASE,
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0
 });
 
-
-// ======================================================
-// TEST DATABASE
-// ======================================================
-
-app.get("/api/test", async (req, res) => {
-
-    try {
-
-        const [rows] = await db.query(
-            "SELECT 1 AS connected"
-        );
-
-        res.json({
-            success: true,
-            message: "MySQL connected successfully",
-            data: rows
-        });
-
-    } catch (error) {
-
-        console.error("Database error:", error);
-
-        res.status(500).json({
-            success: false,
-            error: error.message
-        });
-
-    }
-
-});
-
-
-// ======================================================
-// PROVIDER SEARCH
-// ======================================================
-
-app.get("/api/providers", async (req, res) => {
-
-    try {
-
-        const {
-            keyword = "",
-            insurance = "",
-            language = "",
-            specialty = "",
-            area = "",
-            gender = ""
-        } = req.query;
-
-
-        let sql = `
-            SELECT DISTINCT
-                p.id,
-                p.name AS provider,
-                s.name AS specialty,
-                a.name AS area,
-                p.gender
-            FROM providers p
-
-            LEFT JOIN specialties s
-                ON p.specialty_id = s.id
-
-            LEFT JOIN areas a
-                ON p.area_id = a.id
-
-            LEFT JOIN provider_languages pl
-                ON p.id = pl.provider_id
-
-            LEFT JOIN languages l
-                ON l.id = pl.language_id
-
-            LEFT JOIN provider_insurance pi
-                ON p.id = pi.provider_id
-
-            LEFT JOIN insurance_plans ip
-                ON ip.id = pi.insurance_id
-
-            WHERE 1 = 1
-        `;
-
-
-        const params = [];
-
-
-        // --------------------------------------------------
-        // KEYWORD
-        // --------------------------------------------------
-
-        if (keyword.trim() !== "") {
-
-            sql += `
-                AND (
-                    p.name LIKE ?
-                    OR s.name LIKE ?
-                )
-            `;
-
-            params.push(`%${keyword}%`);
-            params.push(`%${keyword}%`);
-
-        }
-
-
-        // --------------------------------------------------
-        // INSURANCE
-        // --------------------------------------------------
-
-        if (
-            insurance.trim() !== "" &&
-            insurance !== "All Insurance Types"
-        ) {
-
-            sql += `
-                AND ip.name = ?
-            `;
-
-            params.push(insurance);
-
-        }
-
-
-        // --------------------------------------------------
-        // LANGUAGE
-        // --------------------------------------------------
-
-        if (
-            language.trim() !== "" &&
-            language !== "Any Languages"
-        ) {
-
-            sql += `
-                AND l.name = ?
-            `;
-
-            params.push(language);
-
-        }
-
-
-        // --------------------------------------------------
-        // SPECIALTY
-        // --------------------------------------------------
-
-        if (
-            specialty.trim() !== "" &&
-            specialty !== "All Specialties"
-        ) {
-
-            sql += `
-                AND s.name = ?
-            `;
-
-            params.push(specialty);
-
-        }
-
-
-        // --------------------------------------------------
-        // AREA
-        // --------------------------------------------------
-
-        if (
-            area.trim() !== "" &&
-            area !== "All Areas"
-        ) {
-
-            sql += `
-                AND a.name = ?
-            `;
-
-            params.push(area);
-
-        }
-
-
-        // --------------------------------------------------
-        // GENDER
-        // --------------------------------------------------
-
-        if (
-            gender.trim() !== "" &&
-            gender !== "All"
-        ) {
-
-            sql += `
-                AND p.gender = ?
-            `;
-
-            params.push(gender);
-
-        }
-
-
-        // --------------------------------------------------
-        // SORT BY NAME
-        // --------------------------------------------------
-
-        sql += `
-            ORDER BY p.name ASC
-        `;
-
-
-        // --------------------------------------------------
-        // RUN QUERY
-        // --------------------------------------------------
-
-        const [providers] = await db.query(
-            sql,
-            params
-        );
-
-
-        res.json({
-
-            success: true,
-
-            count: providers.length,
-
-            providers: providers
-
-        });
-
-
-    } catch (error) {
-
-        console.error(
-            "Provider search error:",
-            error
-        );
-
-        res.status(500).json({
-
-            success: false,
-
-            error: error.message
-
-        });
-
-    }
-
-});
-
-
-// ======================================================
-// GET LANGUAGES
-// ======================================================
-
-app.get("/api/languages", async (req, res) => {
-
-    try {
-
-        const [rows] = await db.query(`
-            SELECT
-                id,
-                name
-            FROM languages
-            ORDER BY name ASC
-        `);
-
-        res.json(rows);
-
-    } catch (error) {
-
-        console.error(error);
-
-        res.status(500).json({
-            success: false,
-            error: error.message
-        });
-
-    }
-
-});
-
-
-// ======================================================
-// GET INSURANCE
-// ======================================================
-
-app.get("/api/insurance", async (req, res) => {
-
-    try {
-
-        const [rows] = await db.query(`
-            SELECT
-                id,
-                name
-            FROM insurance_plans
-            ORDER BY name ASC
-        `);
-
-        res.json(rows);
-
-    } catch (error) {
-
-        console.error(error);
-
-        res.status(500).json({
-            success: false,
-            error: error.message
-        });
-
-    }
-
-});
-
-
-// ======================================================
-// GET SPECIALTIES
-// ======================================================
-
-app.get("/api/specialties", async (req, res) => {
-
-    try {
-
-        const [rows] = await db.query(`
-            SELECT
-                id,
-                name
-            FROM specialties
-            ORDER BY name ASC
-        `);
-
-        res.json(rows);
-
-    } catch (error) {
-
-        console.error(error);
-
-        res.status(500).json({
-            success: false,
-            error: error.message
-        });
-
-    }
-
-});
-
-
-// ======================================================
-// GET AREAS
-// ======================================================
-
-app.get("/api/areas", async (req, res) => {
-
-    try {
-
-        const [rows] = await db.query(`
-            SELECT
-                id,
-                name
-            FROM areas
-            ORDER BY name ASC
-        `);
-
-        res.json(rows);
-
-    } catch (error) {
-
-        console.error(error);
-
-        res.status(500).json({
-            success: false,
-            error: error.message
-        });
-
-    }
-
-});
-
-
-// ======================================================
-// HOME PAGE
-// ======================================================
-
+// Test route
 app.get("/", (req, res) => {
-
-    res.sendFile(
-        path.join(__dirname, "index.html")
-    );
-
+  res.json({
+    success: true,
+    message: "Hospital Management API is running"
+  });
 });
 
+// Test database connection
+app.get("/api/test-db", async (req, res) => {
+  try {
+    const [rows] = await db.query("SELECT 1 AS connected");
 
-// ======================================================
-// FIND CARE PAGE
-// ======================================================
+    res.json({
+      success: true,
+      message: "Database connected successfully",
+      data: rows
+    });
+  } catch (error) {
+    console.error("Database error:", error);
 
-app.get("/findcare", (req, res) => {
-
-    res.sendFile(
-        path.join(__dirname, "findcare.html")
-    );
-
+    res.status(500).json({
+      success: false,
+      message: "Database connection failed",
+      error: error.message
+    });
+  }
 });
 
+// Get all providers
+app.get("/api/providers", async (req, res) => {
+  try {
+    const [providers] = await db.query(`
+      SELECT 
+        p.id,
+        p.name,
+        p.gender,
+        s.name AS specialty,
+        a.name AS area
+      FROM providers p
+      LEFT JOIN specialties s ON p.specialty_id = s.id
+      LEFT JOIN areas a ON p.area_id = a.id
+      ORDER BY p.id
+    `);
 
-// ======================================================
-// SPECIALIST PAGE
-// ======================================================
+    res.json({
+      success: true,
+      providers
+    });
+  } catch (error) {
+    console.error(error);
 
-app.get("/specialist", (req, res) => {
-
-    res.sendFile(
-        path.join(__dirname, "Specialist.html")
-    );
-
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch providers",
+      error: error.message
+    });
+  }
 });
 
+// Get provider languages
+app.get("/api/providers/:id/languages", async (req, res) => {
+  try {
+    const providerId = req.params.id;
 
-// ======================================================
-// START SERVER
-// ======================================================
+    const [languages] = await db.query(`
+      SELECT 
+        l.id,
+        l.name
+      FROM provider_languages pl
+      JOIN languages l ON pl.language_id = l.id
+      WHERE pl.provider_id = ?
+      ORDER BY l.id
+    `, [providerId]);
 
+    res.json({
+      success: true,
+      languages
+    });
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch languages",
+      error: error.message
+    });
+  }
+});
+
+// Get provider insurance plans
+app.get("/api/providers/:id/insurance", async (req, res) => {
+  try {
+    const providerId = req.params.id;
+
+    const [insurance] = await db.query(`
+      SELECT 
+        i.id,
+        i.name
+      FROM provider_insurance pi
+      JOIN insurance_plans i ON pi.insurance_id = i.id
+      WHERE pi.provider_id = ?
+      ORDER BY i.id
+    `, [providerId]);
+
+    res.json({
+      success: true,
+      insurance
+    });
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch insurance plans",
+      error: error.message
+    });
+  }
+});
+
+// Railway provides the PORT environment variable
 const PORT = process.env.PORT || 3000;
 
-app.listen(
-    PORT,
-    "0.0.0.0",
-    () => {
-
-        console.log(
-            `Server running on port ${PORT}`
-        );
-
-    }
-);
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`Server running on port ${PORT}`);
+});
