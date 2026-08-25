@@ -1,218 +1,1131 @@
 <!DOCTYPE html>
-
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-```
-<title>Find Care - Specialists</title>
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<title>Find Care Results - Specialists</title>
+
+<link
+href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap"
+rel="stylesheet">
+
+<link
+rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
 <style>
-    body {
-        font-family: Arial, sans-serif;
-        background: #f5f5f7;
-        margin: 0;
-        padding: 0;
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Roboto, sans-serif;
+}
+
+body {
+    background: #f5f5f5;
+    color: #333;
+}
+
+/* HEADER */
+
+.top-header {
+    background: #fff;
+    height: 55px;
+    border-bottom: 1px solid #ddd;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 0 30px;
+}
+
+.logo {
+    font-size: 30px;
+    font-weight: bold;
+}
+
+.logo span {
+    color: #6c1d74;
+}
+
+.user {
+    font-size: 14px;
+}
+
+/* NAVBAR */
+
+.navbar {
+    background: #2d2d2d;
+}
+
+.navbar ul {
+    list-style: none;
+
+    display: flex;
+
+    padding-left: 30px;
+}
+
+.navbar li {
+    color: white;
+
+    padding: 17px 22px;
+
+    font-size: 14px;
+
+    cursor: pointer;
+}
+
+.navbar li:hover {
+    background: #6c1d74;
+}
+
+/* BREADCRUMB */
+
+.breadcrumb {
+    background: white;
+
+    padding: 14px 40px;
+
+    font-size: 13px;
+
+    color: #666;
+
+    border-bottom: 1px solid #ddd;
+}
+
+.breadcrumb span {
+    color: #6c1d74;
+}
+
+/* PAGE */
+
+.page {
+    max-width: 1250px;
+
+    margin: 30px auto;
+
+    padding: 0 20px;
+}
+
+.page-title {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    margin-bottom: 20px;
+}
+
+.page-title h1 {
+    font-size: 30px;
+
+    font-weight: 500;
+
+    color: #333;
+}
+
+.new-search {
+    background: #6c1d74;
+
+    color: white;
+
+    border: none;
+
+    padding: 12px 20px;
+
+    border-radius: 4px;
+
+    cursor: pointer;
+
+    font-size: 14px;
+}
+
+.new-search:hover {
+    background: #53165b;
+}
+
+/* SEARCH */
+
+.search-panel {
+    background: white;
+
+    border: 1px solid #ddd;
+
+    border-radius: 4px;
+
+    padding: 25px;
+
+    margin-bottom: 25px;
+}
+
+.search-title {
+    font-size: 20px;
+
+    margin-bottom: 20px;
+
+    font-weight: 500;
+}
+
+.search-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
+    gap: 18px;
+}
+
+.form-group {
+    display: flex;
+
+    flex-direction: column;
+}
+
+.form-group label {
+    font-size: 13px;
+
+    margin-bottom: 7px;
+
+    color: #555;
+}
+
+.form-group input,
+.form-group select {
+    height: 42px;
+
+    border: 1px solid #bbb;
+
+    border-radius: 3px;
+
+    padding: 0 12px;
+
+    font-size: 14px;
+
+    background: white;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+
+    border-color: #6c1d74;
+}
+
+.checkbox-row {
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    margin-top: 18px;
+
+    font-size: 14px;
+}
+
+.search-button-container {
+    margin-top: 20px;
+
+    display: flex;
+
+    gap: 10px;
+}
+
+.search-button {
+    background: #6c1d74;
+
+    color: white;
+
+    border: none;
+
+    padding: 12px 30px;
+
+    border-radius: 4px;
+
+    cursor: pointer;
+
+    font-size: 14px;
+}
+
+.search-button:hover {
+    background: #53165b;
+}
+
+/* RESULTS */
+
+.results-header {
+    background: white;
+
+    border: 1px solid #ddd;
+
+    padding: 15px 20px;
+
+    margin-bottom: 15px;
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+}
+
+.results-count {
+    font-size: 16px;
+
+    font-weight: 500;
+}
+
+.download-button {
+    background: #fff;
+
+    border: 1px solid #6c1d74;
+
+    color: #6c1d74;
+
+    padding: 8px 15px;
+
+    border-radius: 4px;
+
+    cursor: pointer;
+}
+
+/* PROVIDER CARD */
+
+.provider-card {
+    background: white;
+
+    border: 1px solid #ddd;
+
+    margin-bottom: 15px;
+
+    padding: 22px;
+
+    border-radius: 4px;
+}
+
+.provider-top {
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: flex-start;
+
+    margin-bottom: 15px;
+}
+
+.provider-name {
+    font-size: 20px;
+
+    color: #6c1d74;
+
+    font-weight: 500;
+}
+
+.provider-specialty {
+    color: #555;
+
+    font-size: 14px;
+
+    margin-top: 5px;
+}
+
+.provider-details {
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
+    gap: 20px;
+
+    border-top: 1px solid #eee;
+
+    padding-top: 15px;
+}
+
+.detail-title {
+    font-size: 12px;
+
+    color: #777;
+
+    margin-bottom: 5px;
+}
+
+.detail-value {
+    font-size: 14px;
+
+    color: #333;
+
+    line-height: 1.6;
+}
+
+.actions {
+    display: flex;
+
+    gap: 10px;
+
+    margin-top: 18px;
+}
+
+.action-button {
+    border: 1px solid #6c1d74;
+
+    background: white;
+
+    color: #6c1d74;
+
+    padding: 8px 14px;
+
+    border-radius: 4px;
+
+    cursor: pointer;
+
+    font-size: 13px;
+}
+
+.action-button:hover {
+    background: #6c1d74;
+
+    color: white;
+}
+
+.no-results {
+    background: white;
+
+    border: 1px solid #ddd;
+
+    padding: 35px;
+
+    text-align: center;
+
+    color: #666;
+}
+
+.loading {
+    background: white;
+
+    border: 1px solid #ddd;
+
+    padding: 35px;
+
+    text-align: center;
+
+    color: #666;
+}
+
+/* FOOTER */
+
+footer {
+    background: #2d2d2d;
+
+    color: white;
+
+    margin-top: 50px;
+
+    padding: 30px 40px;
+}
+
+.footer-content {
+    max-width: 1250px;
+
+    margin: auto;
+
+    display: flex;
+
+    justify-content: space-between;
+
+    gap: 30px;
+}
+
+.footer-column h3 {
+    margin-bottom: 12px;
+
+    font-size: 16px;
+}
+
+.footer-column p,
+.footer-column a {
+    color: #ccc;
+
+    font-size: 13px;
+
+    line-height: 1.8;
+
+    text-decoration: none;
+}
+
+.footer-column a:hover {
+    color: white;
+}
+
+/* RESPONSIVE */
+
+@media(max-width: 900px) {
+
+    .search-grid {
+        grid-template-columns: 1fr 1fr;
     }
 
-    .header {
-        background: white;
-        padding: 25px;
-        border-bottom: 1px solid #ddd;
+    .provider-details {
+        grid-template-columns: 1fr 1fr;
     }
 
-    .container {
-        width: 1200px;
-        max-width: 95%;
-        margin: 30px auto;
+}
+
+@media(max-width: 650px) {
+
+    .top-header {
+        padding: 0 15px;
     }
 
-    h1 {
-        color: #4b006e;
+    .navbar ul {
+        padding-left: 0;
+
+        flex-wrap: wrap;
     }
 
-    .search-box {
-        background: white;
-        padding: 25px;
-        border-radius: 10px;
-        box-shadow: 0 3px 10px rgba(0,0,0,.1);
+    .navbar li {
+        padding: 12px 15px;
     }
 
-    select,
-    input {
-        padding: 12px;
-        margin: 8px;
-        min-width: 200px;
+    .page-title {
+        flex-direction: column;
+
+        align-items: flex-start;
+
+        gap: 15px;
     }
 
-    button {
-        padding: 12px 30px;
-        background: #5a1778;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
+    .search-grid {
+        grid-template-columns: 1fr;
     }
 
-    .provider {
-        background: white;
-        margin-top: 15px;
-        padding: 20px;
-        border-radius: 8px;
+    .provider-details {
+        grid-template-columns: 1fr;
     }
+
+    .footer-content {
+        flex-direction: column;
+    }
+
+}
+
 </style>
-```
 
 </head>
 
+
 <body>
 
-<div class="header">
-    <h1>Find Care Results - Specialists</h1>
-</div>
 
-<div class="container">
+<!-- HEADER -->
 
-```
-<div class="search-box">
+<div class="top-header">
 
-    <input
-        type="text"
-        id="keyword"
-        placeholder="Keywords"
-    >
+    <div class="logo">
+        Metro<span>PlusHealth</span>
+    </div>
 
-    <select id="insurance">
-        <option value="">All Insurance Types</option>
-    </select>
-
-    <select id="language">
-        <option value="">Any Languages</option>
-    </select>
-
-    <select id="specialty">
-        <option value="">All Specialties</option>
-    </select>
-
-    <select id="area">
-        <option value="">All Areas</option>
-    </select>
-
-    <select id="gender">
-        <option value="">All</option>
-        <option value="Male">Male</option>
-        <option value="Female">Female</option>
-        <option value="Other">Other</option>
-    </select>
-
-    <br>
-
-    <button onclick="searchProviders()">
-        Search
-    </button>
+    <div class="user">
+        MOHAMMAD
+    </div>
 
 </div>
 
-<div id="results"></div>
-```
+
+<!-- NAVIGATION -->
+
+<nav class="navbar">
+
+    <ul>
+
+        <li>Home</li>
+
+        <li>My Benefits</li>
+
+        <li>Find Care</li>
+
+        <li>My Services</li>
+
+        <li>Resources</li>
+
+    </ul>
+
+</nav>
+
+
+<!-- BREADCRUMB -->
+
+<div class="breadcrumb">
+
+    Home &nbsp; / &nbsp;
+
+    <span>Find Care</span> &nbsp; / &nbsp;
+
+    Specialists
 
 </div>
+
+
+<!-- PAGE -->
+
+<div class="page">
+
+
+    <!-- TITLE -->
+
+    <div class="page-title">
+
+        <h1>
+            Find Care Results - Specialists
+        </h1>
+
+        <button
+            class="new-search"
+            onclick="newSearch()">
+
+            New Search
+
+        </button>
+
+    </div>
+
+
+    <!-- SEARCH PANEL -->
+
+    <div class="search-panel">
+
+        <div class="search-title">
+            Standard Search
+        </div>
+
+
+        <div class="search-grid">
+
+
+            <!-- KEYWORDS -->
+
+            <div class="form-group">
+
+                <label>
+                    Keywords
+                </label>
+
+                <input
+                    type="text"
+                    id="keyword"
+                    placeholder="Keywords">
+
+            </div>
+
+
+            <!-- ZIP -->
+
+            <div class="form-group">
+
+                <label>
+                    Zip Code
+                </label>
+
+                <input
+                    type="text"
+                    id="zipcode"
+                    placeholder="Zip Code">
+
+            </div>
+
+
+            <!-- DISTANCE -->
+
+            <div class="form-group">
+
+                <label>
+                    Distance
+                </label>
+
+                <select id="distance">
+
+                    <option value="">
+                        Select
+                    </option>
+
+                    <option value="1.5">
+                        Within 1.5 Miles
+                    </option>
+
+                    <option value="5">
+                        Within 5 Miles
+                    </option>
+
+                    <option value="10">
+                        Within 10 Miles
+                    </option>
+
+                    <option value="20">
+                        Within 20 Miles
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <!-- INSURANCE -->
+
+            <div class="form-group">
+
+                <label>
+                    Plan Type
+                </label>
+
+                <select id="insurance">
+
+                    <option value="">
+                        All Insurance Types
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <!-- LANGUAGE -->
+
+            <div class="form-group">
+
+                <label>
+                    Language
+                </label>
+
+                <select id="language">
+
+                    <option value="">
+                        Any Languages
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <!-- SORT -->
+
+            <div class="form-group">
+
+                <label>
+                    Sort
+                </label>
+
+                <select id="sort">
+
+                    <option value="distance">
+                        Distance
+                    </option>
+
+                    <option value="name_asc">
+                        Name (A-Z)
+                    </option>
+
+                    <option value="name_desc">
+                        Name (Z-A)
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <!-- GENDER -->
+
+            <div class="form-group">
+
+                <label>
+                    Gender
+                </label>
+
+                <select id="gender">
+
+                    <option value="">
+                        All
+                    </option>
+
+                    <option value="Male">
+                        Male
+                    </option>
+
+                    <option value="Female">
+                        Female
+                    </option>
+
+                    <option value="Other">
+                        Other
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <!-- SPECIALTY -->
+
+            <div class="form-group">
+
+                <label>
+                    Specialty
+                </label>
+
+                <select id="specialty">
+
+                    <option value="">
+                        All Specialties
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <!-- AREA -->
+
+            <div class="form-group">
+
+                <label>
+                    Area
+                </label>
+
+                <select id="area">
+
+                    <option value="">
+                        All Areas
+                    </option>
+
+                </select>
+
+            </div>
+
+
+        </div>
+
+
+        <!-- ACCEPTING NEW PATIENTS -->
+
+        <div class="checkbox-row">
+
+            <input
+                type="checkbox"
+                id="newPatients">
+
+            <label for="newPatients">
+
+                Accepting New Patients
+
+            </label>
+
+        </div>
+
+
+        <!-- BUTTON -->
+
+        <div class="search-button-container">
+
+            <button
+                class="search-button"
+                onclick="searchProviders()">
+
+                Search
+
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- RESULTS HEADER -->
+
+    <div class="results-header">
+
+        <div
+            class="results-count"
+            id="resultsCount">
+
+            Search for providers
+
+        </div>
+
+        <button
+            class="download-button"
+            onclick="downloadResults()">
+
+            Download PDF
+
+        </button>
+
+    </div>
+
+
+    <!-- RESULTS -->
+
+    <div id="results">
+
+        <div class="loading">
+
+            Loading providers...
+
+        </div>
+
+    </div>
+
+
+</div>
+
+
+<!-- FOOTER -->
+
+<footer>
+
+    <div class="footer-content">
+
+
+        <div class="footer-column">
+
+            <h3>
+                MetroPlusHealth
+            </h3>
+
+            <p>
+                160 Water Street,
+                New York, NY 10038
+            </p>
+
+        </div>
+
+
+        <div class="footer-column">
+
+            <h3>
+                Find Care
+            </h3>
+
+            <p>
+                <a href="./Specialist.html">
+                    Specialists
+                </a>
+            </p>
+
+        </div>
+
+
+        <div class="footer-column">
+
+            <h3>
+                Support
+            </h3>
+
+            <p>
+                Member Services
+            </p>
+
+        </div>
+
+
+    </div>
+
+</footer>
+
 
 <script>
 
+
+/* =====================================================
+   API BASE
+===================================================== */
+
 const API_URL = window.location.origin;
 
+
+/* =====================================================
+   LOAD FILTERS
+===================================================== */
 
 async function loadFilters() {
 
     try {
 
-        const [
-            insuranceResponse,
-            languageResponse,
-            specialtyResponse,
-            areaResponse
-        ] = await Promise.all([
+
+        const responses = await Promise.all([
 
             fetch(API_URL + "/api/insurance"),
+
             fetch(API_URL + "/api/languages"),
+
             fetch(API_URL + "/api/specialties"),
+
             fetch(API_URL + "/api/areas")
 
         ]);
 
 
-        if (!insuranceResponse.ok) {
-            throw new Error("Unable to load insurance");
-        }
-
-        if (!languageResponse.ok) {
-            throw new Error("Unable to load languages");
-        }
-
-        if (!specialtyResponse.ok) {
-            throw new Error("Unable to load specialties");
-        }
-
-        if (!areaResponse.ok) {
-            throw new Error("Unable to load areas");
+        if (!responses[0].ok) {
+            throw new Error(
+                "Insurance API failed"
+            );
         }
 
 
-        const insurance = await insuranceResponse.json();
-        const languages = await languageResponse.json();
-        const specialties = await specialtyResponse.json();
-        const areas = await areaResponse.json();
+        if (!responses[1].ok) {
+            throw new Error(
+                "Languages API failed"
+            );
+        }
+
+
+        if (!responses[2].ok) {
+            throw new Error(
+                "Specialties API failed"
+            );
+        }
+
+
+        if (!responses[3].ok) {
+            throw new Error(
+                "Areas API failed"
+            );
+        }
+
+
+        const insurance =
+            await responses[0].json();
+
+
+        const languages =
+            await responses[1].json();
+
+
+        const specialties =
+            await responses[2].json();
+
+
+        const areas =
+            await responses[3].json();
+
+
+        const insuranceSelect =
+            document.getElementById(
+                "insurance"
+            );
+
+
+        const languageSelect =
+            document.getElementById(
+                "language"
+            );
+
+
+        const specialtySelect =
+            document.getElementById(
+                "specialty"
+            );
+
+
+        const areaSelect =
+            document.getElementById(
+                "area"
+            );
 
 
         insurance.forEach(item => {
 
-            document.getElementById("insurance").innerHTML += `
-                <option value="${item.name}">
-                    ${item.name}
-                </option>
-            `;
+            const option =
+                document.createElement(
+                    "option"
+                );
+
+            option.value =
+                item.name;
+
+            option.textContent =
+                item.name;
+
+            insuranceSelect.appendChild(
+                option
+            );
 
         });
 
 
         languages.forEach(item => {
 
-            document.getElementById("language").innerHTML += `
-                <option value="${item.name}">
-                    ${item.name}
-                </option>
-            `;
+            const option =
+                document.createElement(
+                    "option"
+                );
+
+            option.value =
+                item.name;
+
+            option.textContent =
+                item.name;
+
+            languageSelect.appendChild(
+                option
+            );
 
         });
 
 
         specialties.forEach(item => {
 
-            document.getElementById("specialty").innerHTML += `
-                <option value="${item.name}">
-                    ${item.name}
-                </option>
-            `;
+            const option =
+                document.createElement(
+                    "option"
+                );
+
+            option.value =
+                item.name;
+
+            option.textContent =
+                item.name;
+
+            specialtySelect.appendChild(
+                option
+            );
 
         });
 
 
         areas.forEach(item => {
 
-            document.getElementById("area").innerHTML += `
-                <option value="${item.name}">
-                    ${item.name}
-                </option>
-            `;
+            const option =
+                document.createElement(
+                    "option"
+                );
+
+            option.value =
+                item.name;
+
+            option.textContent =
+                item.name;
+
+            areaSelect.appendChild(
+                option
+            );
 
         });
 
-    } catch (error) {
+
+    } catch(error) {
 
         console.error(
-            "Could not load filters:",
+            "Filter loading error:",
             error
         );
 
@@ -221,51 +1134,165 @@ async function loadFilters() {
 }
 
 
+/* =====================================================
+   SEARCH PROVIDERS
+===================================================== */
+
 async function searchProviders() {
 
+
     const keyword =
-        document.getElementById("keyword").value;
+        document.getElementById(
+            "keyword"
+        ).value;
+
+
+    const zipcode =
+        document.getElementById(
+            "zipcode"
+        ).value;
+
+
+    const distance =
+        document.getElementById(
+            "distance"
+        ).value;
+
 
     const insurance =
-        document.getElementById("insurance").value;
+        document.getElementById(
+            "insurance"
+        ).value;
+
 
     const language =
-        document.getElementById("language").value;
+        document.getElementById(
+            "language"
+        ).value;
 
-    const specialty =
-        document.getElementById("specialty").value;
 
-    const area =
-        document.getElementById("area").value;
+    const sort =
+        document.getElementById(
+            "sort"
+        ).value;
+
 
     const gender =
-        document.getElementById("gender").value;
+        document.getElementById(
+            "gender"
+        ).value;
 
 
-    const params = new URLSearchParams({
+    const specialty =
+        document.getElementById(
+            "specialty"
+        ).value;
 
-        keyword,
-        insurance,
-        language,
-        specialty,
-        area,
+
+    const area =
+        document.getElementById(
+            "area"
+        ).value;
+
+
+    const newPatients =
+        document.getElementById(
+            "newPatients"
+        ).checked;
+
+
+    const params =
+        new URLSearchParams();
+
+
+    params.append(
+        "keyword",
+        keyword
+    );
+
+
+    params.append(
+        "zipcode",
+        zipcode
+    );
+
+
+    params.append(
+        "distance",
+        distance
+    );
+
+
+    params.append(
+        "insurance",
+        insurance
+    );
+
+
+    params.append(
+        "language",
+        language
+    );
+
+
+    params.append(
+        "sort",
+        sort
+    );
+
+
+    params.append(
+        "gender",
         gender
+    );
 
-    });
+
+    params.append(
+        "specialty",
+        specialty
+    );
+
+
+    params.append(
+        "area",
+        area
+    );
+
+
+    params.append(
+        "newPatients",
+        newPatients
+    );
+
+
+    const results =
+        document.getElementById(
+            "results"
+        );
+
+
+    results.innerHTML = `
+        <div class="loading">
+            Searching providers...
+        </div>
+    `;
 
 
     try {
 
+
         const response =
             await fetch(
-                API_URL + `/api/providers?${params.toString()}`
+                API_URL +
+                "/api/providers?" +
+                params.toString()
             );
 
 
         if (!response.ok) {
 
             throw new Error(
-                "Provider API returned an error"
+                "Provider API failed"
             );
 
         }
@@ -275,9 +1302,6 @@ async function searchProviders() {
             await response.json();
 
 
-        const results =
-            document.getElementById("results");
-
         results.innerHTML = "";
 
 
@@ -286,64 +1310,436 @@ async function searchProviders() {
             data.providers.length === 0
         ) {
 
-            results.innerHTML =
-                "<div class='provider'>No providers found.</div>";
+
+            document.getElementById(
+                "resultsCount"
+            ).textContent =
+                "0 providers found";
+
+
+            results.innerHTML = `
+
+                <div class="no-results">
+
+                    No providers found
+                    matching your search.
+
+                </div>
+
+            `;
 
             return;
 
         }
 
 
-        data.providers.forEach(provider => {
-
-            results.innerHTML += `
-
-                <div class="provider">
-
-                    <h2>
-                        ${provider.provider}
-                    </h2>
-
-                    <p>
-                        <strong>Specialty:</strong>
-                        ${provider.specialty || "N/A"}
-                    </p>
-
-                    <p>
-                        <strong>Area:</strong>
-                        ${provider.area || "N/A"}
-                    </p>
-
-                    <p>
-                        <strong>Gender:</strong>
-                        ${provider.gender || "N/A"}
-                    </p>
-
-                </div>
-
-            `;
-
-        });
+        document.getElementById(
+            "resultsCount"
+        ).textContent =
+            data.providers.length +
+            " providers found";
 
 
-    } catch (error) {
+        data.providers.forEach(
+            provider => {
+
+                const card =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                card.className =
+                    "provider-card";
+
+
+                card.innerHTML = `
+
+                    <div class="provider-top">
+
+                        <div>
+
+                            <div class="provider-name">
+
+                                ${escapeHTML(
+                                    provider.provider ||
+                                    provider.name ||
+                                    ""
+                                )}
+
+                            </div>
+
+                            <div class="provider-specialty">
+
+                                ${escapeHTML(
+                                    provider.specialty ||
+                                    "Specialist"
+                                )}
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="provider-details">
+
+                        <div>
+
+                            <div class="detail-title">
+                                Specialty
+                            </div>
+
+                            <div class="detail-value">
+
+                                ${escapeHTML(
+                                    provider.specialty ||
+                                    "N/A"
+                                )}
+
+                            </div>
+
+                        </div>
+
+
+                        <div>
+
+                            <div class="detail-title">
+                                Area
+                            </div>
+
+                            <div class="detail-value">
+
+                                ${escapeHTML(
+                                    provider.area ||
+                                    "N/A"
+                                )}
+
+                            </div>
+
+                        </div>
+
+
+                        <div>
+
+                            <div class="detail-title">
+                                Gender
+                            </div>
+
+                            <div class="detail-value">
+
+                                ${escapeHTML(
+                                    provider.gender ||
+                                    "N/A"
+                                )}
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="actions">
+
+                        <button
+                            class="action-button"
+                            onclick="showDirections(
+                                '${escapeJS(
+                                    provider.area || ""
+                                )}'
+                            )">
+
+                            <i class="fa-solid fa-location-dot"></i>
+
+                            Directions
+
+                        </button>
+
+                    </div>
+
+                `;
+
+
+                results.appendChild(
+                    card
+                );
+
+            }
+        );
+
+
+    } catch(error) {
+
 
         console.error(
             "Search error:",
             error
         );
 
-        document.getElementById("results").innerHTML =
-            "<div class='provider'>Unable to search providers.</div>";
+
+        results.innerHTML = `
+
+            <div class="no-results">
+
+                Unable to search providers.
+
+                <br><br>
+
+                Please try again.
+
+            </div>
+
+        `;
 
     }
 
 }
 
 
+/* =====================================================
+   ESCAPE HTML
+===================================================== */
+
+function escapeHTML(value) {
+
+    const div =
+        document.createElement(
+            "div"
+        );
+
+    div.textContent =
+        value == null
+            ? ""
+            : String(value);
+
+    return div.innerHTML;
+
+}
+
+
+/* =====================================================
+   ESCAPE JAVASCRIPT
+===================================================== */
+
+function escapeJS(value) {
+
+    return String(
+        value || ""
+    )
+    .replace(
+        /\\/g,
+        "\\\\"
+    )
+    .replace(
+        /'/g,
+        "\\'"
+    )
+    .replace(
+        /"/g,
+        '\\"'
+    );
+
+}
+
+
+/* =====================================================
+   NEW SEARCH
+===================================================== */
+
+function newSearch() {
+
+
+    document.getElementById(
+        "keyword"
+    ).value = "";
+
+
+    document.getElementById(
+        "zipcode"
+    ).value = "";
+
+
+    document.getElementById(
+        "distance"
+    ).value = "";
+
+
+    document.getElementById(
+        "insurance"
+    ).value = "";
+
+
+    document.getElementById(
+        "language"
+    ).value = "";
+
+
+    document.getElementById(
+        "sort"
+    ).value = "distance";
+
+
+    document.getElementById(
+        "gender"
+    ).value = "";
+
+
+    document.getElementById(
+        "specialty"
+    ).value = "";
+
+
+    document.getElementById(
+        "area"
+    ).value = "";
+
+
+    document.getElementById(
+        "newPatients"
+    ).checked = false;
+
+
+    document.getElementById(
+        "resultsCount"
+    ).textContent =
+        "Search for providers";
+
+
+    document.getElementById(
+        "results"
+    ).innerHTML = "";
+
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+
+}
+
+
+/* =====================================================
+   DIRECTIONS
+===================================================== */
+
+function showDirections(area) {
+
+
+    if (!area) {
+
+        alert(
+            "Location is not available."
+        );
+
+        return;
+
+    }
+
+
+    const url =
+        "https://www.google.com/maps/search/?api=1&query=" +
+        encodeURIComponent(area);
+
+
+    window.open(
+        url,
+        "_blank"
+    );
+
+}
+
+
+/* =====================================================
+   DOWNLOAD RESULTS
+===================================================== */
+
+function downloadResults() {
+
+
+    const results =
+        document.getElementById(
+            "results"
+        );
+
+
+    if (
+        !results ||
+        results.innerText.trim() === ""
+    ) {
+
+        alert(
+            "Please search for providers first."
+        );
+
+        return;
+
+    }
+
+
+    const text =
+        results.innerText;
+
+
+    const blob =
+        new Blob(
+            [text],
+            {
+                type: "text/plain"
+            }
+        );
+
+
+    const url =
+        URL.createObjectURL(
+            blob
+        );
+
+
+    const link =
+        document.createElement(
+            "a"
+        );
+
+
+    link.href =
+        url;
+
+
+    link.download =
+        "specialist-results.txt";
+
+
+    document.body.appendChild(
+        link
+    );
+
+
+    link.click();
+
+
+    document.body.removeChild(
+        link
+    );
+
+
+    URL.revokeObjectURL(
+        url
+    );
+
+}
+
+
+/* =====================================================
+   START
+===================================================== */
+
 loadFilters();
 
 </script>
 
+
 </body>
+
 </html>
