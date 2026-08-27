@@ -1,13 +1,13 @@
-FROM php:8.3-cli
+FROM node:22-alpine
 
-# Install MySQL/PDO extensions
-RUN docker-php-ext-install mysqli pdo pdo_mysql
+WORKDIR /app
 
-# Copy website files
-COPY . /var/www/html/
+COPY package*.json ./
 
-# Railway will provide PORT automatically
+RUN npm install
+
+COPY . .
+
 EXPOSE 8080
 
-# Start PHP built-in server
-CMD ["sh", "-c", "php -S 0.0.0.0:${PORT:-8080} -t /var/www/html"]
+CMD ["node", "server.js"]
