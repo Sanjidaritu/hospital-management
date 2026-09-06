@@ -14,7 +14,7 @@ public class UITest extends BaseClass {
     @Test
     public void filter() throws InterruptedException {
         Select language = new Select(
-                driver.findElement(By.xpath("//select[@id='language']")));
+                driver.findElement(By.xpath("//select[@i='language']")));
         language.selectByVisibleText("English");
 
         Select gender = new Select(
