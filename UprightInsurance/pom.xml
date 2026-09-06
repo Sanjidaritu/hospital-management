@@ -15,7 +15,7 @@
   </properties>
 
   <dependencies>
-    
+
 
   <!-- Source: https://mvnrepository.com/artifact/org.testng/testng -->
   <dependency>
@@ -27,7 +27,7 @@
 
   <!-- https://mvnrepository.com/artifact/tech.grasshopper/extentreports-cucumber7-adapter -->
 
-
+    <!-- Jenkins polling demonstration -->
   <!-- Source: https://mvnrepository.com/artifact/org.seleniumhq.selenium/selenium-java -->
   <dependency>
     <groupId>org.seleniumhq.selenium</groupId>
