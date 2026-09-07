@@ -6,7 +6,7 @@ pipeline {
     }
 
     stages {
-        stage('Run UI Tests') {
+        stage('Run UI Automation Tests') {
             steps {
                 dir('UprightInsurance') {
                     bat 'mvn clean test'
@@ -17,17 +17,69 @@ pipeline {
 
     post {
         always {
+            junit(
+                testResults: 'UprightInsurance/target/surefire-reports/TEST-*.xml',
+                allowEmptyResults: true
+            )
+
+            archiveArtifacts(
+                artifacts: 'UprightInsurance/target/surefire-reports/**',
+                allowEmptyArchive: true
+            )
+
             emailext(
                 to: 'uprighttechsolutions@gmail.com',
-                subject: "Jenkins Build: ${env.JOB_NAME} #${env.BUILD_NUMBER} - ${currentBuild.currentResult}",
+                subject: "Hospital UI Tests: ${env.JOB_NAME} #${env.BUILD_NUMBER} - ${currentBuild.currentResult}",
                 mimeType: 'text/html',
+                attachLog: true,
+                attachmentsPattern: 'UprightInsurance/target/surefire-reports/emailable-report.html',
                 body: """
-                    <h2>Jenkins Test Result</h2>
-                    <p><b>Job:</b> ${env.JOB_NAME}</p>
-                    <p><b>Build:</b> #${env.BUILD_NUMBER}</p>
-                    <p><b>Status:</b> ${currentBuild.currentResult}</p>
+                    <html>
+                        <body>
+                            <h2>Hospital UI Automation Results</h2>
+
+                            <p>
+                                <b>Status:</b>
+                                ${currentBuild.currentResult}
+                            </p>
+
+                            <p>
+                                <b>Job:</b>
+                                ${env.JOB_NAME}
+                            </p>
+
+                            <p>
+                                <b>Build Number:</b>
+                                #${env.BUILD_NUMBER}
+                            </p>
+
+                            <p>
+                                <b>Test Report:</b>
+                                The TestNG HTML report is attached.
+                            </p>
+
+                            <p>
+                                <b>Console Output:</b>
+                                The Jenkins console log is attached.
+                            </p>
+
+                            <p>
+                                <a href="${env.BUILD_URL}">
+                                    Open Jenkins Build
+                                </a>
+                            </p>
+                        </body>
+                    </html>
                 """
             )
+        }
+
+        success {
+            echo 'UI automation tests passed.'
+        }
+
+        failure {
+            echo 'UI automation tests failed. Check the email and console output.'
         }
     }
 }
