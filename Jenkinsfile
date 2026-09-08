@@ -7,7 +7,7 @@ pipeline {
 
     stages {
 
-        stage('Test Railway DEV Connection') {
+        stage('Deploy to DEV') {
             steps {
                 withCredentials([
                     string(
@@ -20,7 +20,7 @@ pipeline {
             }
         }
 
-        stage('Run UI Automation Tests') {
+        stage('Smoke Test in Dev Env') {
             steps {
                 dir('UprightInsurance') {
                     bat 'mvn clean test'
