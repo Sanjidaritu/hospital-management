@@ -5,6 +5,21 @@ pipeline {
         pollSCM('H/5 * * * *')
     }
 
+stages {
+
+    stage('Test Railway DEV Connection') {
+        steps {
+            withCredentials([
+                string(
+                    credentialsId: 'railway-dev-token',
+                    variable: 'RAILWAY_TOKEN'
+                )
+            ]) {
+                bat 'railway status'
+            }
+        }
+    }
+
     stages {
         stage('Run UI Automation Tests') {
             steps {
