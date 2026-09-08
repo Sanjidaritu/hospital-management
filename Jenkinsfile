@@ -5,22 +5,21 @@ pipeline {
         pollSCM('H/5 * * * *')
     }
 
-stages {
+    stages {
 
-    stage('Test Railway DEV Connection') {
-        steps {
-            withCredentials([
-                string(
-                    credentialsId: 'railway-dev-token',
-                    variable: 'RAILWAY_TOKEN'
-                )
-            ]) {
-                bat 'railway status'
+        stage('Test Railway DEV Connection') {
+            steps {
+                withCredentials([
+                    string(
+                        credentialsId: 'railway-dev-token',
+                        variable: 'RAILWAY_TOKEN'
+                    )
+                ]) {
+                    bat 'railway status'
+                }
             }
         }
-    }
 
-    stages {
         stage('Run UI Automation Tests') {
             steps {
                 dir('UprightInsurance') {
@@ -32,6 +31,7 @@ stages {
 
     post {
         always {
+
             junit(
                 testResults: 'UprightInsurance/target/surefire-reports/TEST-*.xml',
                 allowEmptyResults: true
