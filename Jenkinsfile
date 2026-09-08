@@ -15,8 +15,7 @@ pipeline {
                         variable: 'RAILWAY_TOKEN'
                     )
                 ]) {
-                    bat 'railway --version'
-                    bat 'railway status'
+                     bat 'railway up --service hospital-management --environment Dev --ci'
                 }
             }
         }
