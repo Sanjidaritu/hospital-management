@@ -15,7 +15,8 @@ pipeline {
                         variable: 'RAILWAY_TOKEN'
                     )
                 ]) {
-                    bat '"C:\\Users\\shila islam\\AppData\\Roaming\\npm\\railway.cmd" status'
+                    bat 'railway --version'
+                    bat 'railway status'
                 }
             }
         }
