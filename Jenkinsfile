@@ -7,20 +7,41 @@ pipeline {
 
     stages {
 
-        stage('Deploy to DEV') {
+        stage('Deploy to DEV Env') {
             steps {
                 withCredentials([
-                    string(
-                        credentialsId: 'railway-dev-token',
-                        variable: 'RAILWAY_TOKEN'
-                    )
+                        string(
+                                credentialsId: 'railway-dev-token',
+                                variable: 'RAILWAY_TOKEN'
+                        )
                 ]) {
-                     bat 'railway up --service hospital-management --environment Dev --ci'
+                    bat 'railway up --service hospital-management --environment Dev --ci'
                 }
             }
         }
 
-        stage('Smoke Test in Dev Env') {
+        stage('Smoke Test in DEV Env') {
+            steps {
+                dir('UprightInsurance') {
+                    bat 'mvn clean test'
+                }
+            }
+        }
+
+        stage('Deploy to QA Env') {
+            steps {
+                withCredentials([
+                        string(
+                                credentialsId: 'railway-qa-token',
+                                variable: 'RAILWAY_TOKEN'
+                        )
+                ]) {
+                    bat 'railway up --service hospital-management --environment QA --ci'
+                }
+            }
+        }
+
+        stage('Smoke Test in QA Env') {
             steps {
                 dir('UprightInsurance') {
                     bat 'mvn clean test'
@@ -33,22 +54,23 @@ pipeline {
         always {
 
             junit(
-                testResults: 'UprightInsurance/target/surefire-reports/TEST-*.xml',
-                allowEmptyResults: true
+                    testResults: 'UprightInsurance/target/surefire-reports/TEST-*.xml',
+                    allowEmptyResults: true
             )
 
             archiveArtifacts(
-                artifacts: 'UprightInsurance/target/surefire-reports/**',
-                allowEmptyArchive: true
+                    artifacts: 'UprightInsurance/target/surefire-reports/**',
+                    allowEmptyArchive: true
             )
 
             emailext(
-                to: 'uprighttechsolutions@gmail.com',
-                subject: "Hospital UI Tests: ${env.JOB_NAME} #${env.BUILD_NUMBER} - ${currentBuild.currentResult}",
-                mimeType: 'text/html',
-                attachLog: true,
-                attachmentsPattern: 'UprightInsurance/target/surefire-reports/emailable-report.html',
-                body: """
+                    to: 'uprighttechsolutions@gmail.com',
+                    subject: "Hospital UI Tests: ${env.JOB_NAME} #${env.BUILD_NUMBER} - ${currentBuild.currentResult}",
+                    mimeType: 'text/html',
+                    attachLog: true,
+                    attachmentsPattern: 'UprightInsurance/target/surefire-reports/emailable-report.html',
+
+                    body: """
                     <html>
                         <body>
                             <h2>Hospital UI Automation Results</h2>
@@ -90,11 +112,11 @@ pipeline {
         }
 
         success {
-            echo 'UI automation tests passed.'
+            echo 'DEV and QA deployment/smoke tests passed.'
         }
 
         failure {
-            echo 'UI automation tests failed. Check the email and console output.'
+            echo 'Pipeline failed. Check the email and console output.'
         }
     }
 }
