@@ -1,0 +1,117 @@
+trigger:
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  RAILWAY_SERVICE: 'hospital-management'
+
+stages:
+
+# ==================================
+# Stage 1: Deploy to DEV
+# ==================================
+
+- stage: Deploy_DEV
+  displayName: 'Deploy to DEV Environment'
+
+  jobs:
+  - job: DeployDev
+
+    steps:
+    - checkout: self
+
+    - script: |
+        npm install -g @railway/cli
+        railway up \
+          --project "$(RAILWAY_PROJECT_ID)" \
+          --service "$(RAILWAY_SERVICE)" \
+          --environment Dev \
+          --ci
+      displayName: 'Deploy Application to Railway DEV'
+      env:
+        RAILWAY_TOKEN: $(RAILWAY_DEV_TOKEN)
+
+
+# ==================================
+# Stage 2: Smoke Test DEV
+# ==================================
+
+- stage: Smoke_DEV
+  displayName: 'Smoke Test DEV'
+  dependsOn: Deploy_DEV
+
+  jobs:
+  - job: DevSmoke
+
+    steps:
+    - checkout: self
+
+    - script: |
+        cd UprightInsurance
+        mvn clean test
+      displayName: 'Execute DEV Smoke Tests'
+
+    - task: PublishTestResults@2
+      condition: always()
+      inputs:
+        testResultsFormat: 'JUnit'
+        testResultsFiles: '**/surefire-reports/TEST-*.xml'
+        failTaskOnFailedTests: true
+
+
+# ==================================
+# Stage 3: Deploy to QA
+# ==================================
+
+- stage: Deploy_QA
+  displayName: 'Deploy to QA Environment'
+  dependsOn: Smoke_DEV
+  condition: succeeded()
+
+  jobs:
+  - job: DeployQA
+
+    steps:
+    - checkout: self
+
+    - script: |
+        npm install -g @railway/cli
+        railway up \
+          --project "$(RAILWAY_PROJECT_ID)" \
+          --service "$(RAILWAY_SERVICE)" \
+          --environment QA \
+          --ci
+      displayName: 'Deploy Application to Railway QA'
+      env:
+        RAILWAY_TOKEN: $(RAILWAY_QA_TOKEN)
+
+
+# ==================================
+# Stage 4: Smoke Test QA
+# ==================================
+
+- stage: Smoke_QA
+  displayName: 'Smoke Test QA'
+  dependsOn: Deploy_QA
+
+  jobs:
+  - job: QaSmoke
+
+    steps:
+    - checkout: self
+
+    - script: |
+        cd UprightInsurance
+        mvn clean test
+      displayName: 'Execute QA Smoke Tests'
+
+    - task: PublishTestResults@2
+      condition: always()
+      inputs:
+        testResultsFormat: 'JUnit'
+        testResultsFiles: '**/surefire-reports/TEST-*.xml'
+        failTaskOnFailedTests: true
