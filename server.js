@@ -1,7 +1,22 @@
 const express = require("express");
 const cors = require("cors");
 const mysql = require("mysql2/promise");
+const winston = require("winston");
 
+const { Syslog } = require("winston-syslog");
+
+const logger = winston.createLogger({
+  level: "info",
+  format: winston.format.json(),
+  transports: [
+    new Syslog({
+      host: process.env.DD_AGENT_HOST || "datadog-agent.railway.internal",
+      port: 514,
+      protocol: "udp4",
+      app_name: "hospital-management"
+    })
+  ]
+});
 const app = express();
 
 app.use(cors());
@@ -517,6 +532,6 @@ app.listen(
     console.log(
       `Server running on port ${PORT}`
     );
-
+logger.info("Hospital Management application started successfully");
   }
 );
