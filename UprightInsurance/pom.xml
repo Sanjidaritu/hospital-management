@@ -44,6 +44,6 @@
     <scope>compile</scope>
   </dependency>
 <!-- Learning Jenkins Pipeline with Sabrina/deploying to dev env-->
-<!--    working with Belay-->
+<!--    working with Sabrina on yml file-->
   </dependencies>
 </project>
